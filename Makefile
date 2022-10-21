@@ -1,3 +1,5 @@
+VERSION ?= 0.0.1
+
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -7,7 +9,7 @@ CONTROLLER_GEN = go run sigs.k8s.io/controller-tools/cmd/controller-gen
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
 
-IMAGE_TAG_BASE ?= ghcr.io/ionos-cloud/octopinger/operator
+IMAGE_TAG_BASE ?= ghcr.io/ionos-cloud/octopinger/manager
 
 IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 
