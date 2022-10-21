@@ -17,6 +17,7 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+bin
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -27,8 +28,6 @@ go.work
 ### Go Patch ###
 /vendor/
 /Godeps/
-
-credentials.json
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
