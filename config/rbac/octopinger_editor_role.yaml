@@ -1,0 +1,24 @@
+# permissions for end users to edit octopingers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: octopinger-editor-role
+rules:
+- apiGroups:
+  - octopinger.io
+  resources:
+  - octopingers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - octopinger.io
+  resources:
+  - octopingers/status
+  verbs:
+  - get

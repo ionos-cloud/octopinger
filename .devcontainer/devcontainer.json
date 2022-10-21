@@ -12,7 +12,8 @@
     "postCreateCommand": "bash scripts/postCreateCommand.sh",
     "features": {
       "docker-in-docker": "latest",
-      "golang": "1.19"
+      "golang": "1.19",
+      "kubectl-helm-minikube": "latest"
     },
     "forwardPorts": [
       8080
@@ -24,4 +25,3 @@
     },
     "remoteUser": "vscode"
   }
-  

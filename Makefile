@@ -4,6 +4,13 @@ CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # Controller generation command
 CONTROLLER_GEN = go run sigs.k8s.io/controller-tools/cmd/controller-gen
 
+# kustomize for deploy
+KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
+
+IMAGE_TAG_BASE ?= ghcr.io/ionos-cloud/octopinger/operator
+
+IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
+
 ##@ Development
 
 manifests:
@@ -36,3 +43,8 @@ vendor:
 	@go mod tidy
 	@go mod vendor
 	@go get -u ./...
+
+##@ Deployment
+deploy: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default | kubectl apply -f -
