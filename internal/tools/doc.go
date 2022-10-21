@@ -4,6 +4,7 @@
 package tools
 
 import (
+	_ "github.com/derailed/k9s"
 	_ "github.com/golang/mock/mockgen/model"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "mvdan.cc/gofumpt"

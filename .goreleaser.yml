@@ -1,0 +1,61 @@
+project_name: octopinger
+
+builds:
+  -
+    id: manager
+    binary: manager-{{.Os}}-{{.Arch}}
+    main: cmd/operator/main.go
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    ignore:
+        - goos: darwin
+          goarch: 386
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+        - -s -w
+    no_unique_dist_dir: true
+
+archives:
+  -
+    id: manager
+    builds:
+      - manager
+    name_template: "manager_{{.Version}}_{{.Os}}_{{.Arch}}"
+
+dockers:
+  -
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+    ids:
+      - manager
+    image_templates:
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager:latest"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager:{{.Tag}}"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--build-arg=BINARY=manager-linux-amd64"
+      - "--platform=linux/amd64"
+
+gomod:
+  proxy: false
+
+release:
+  draft: false
+
+snapshot:
+  name_template: "{{.Tag}}"
+
+checksum:
+  name_template: "octopinger_go_checksums.txt"

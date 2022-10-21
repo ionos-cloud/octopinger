@@ -31,7 +31,7 @@ vet: ## Run go vet against code.
 
 .PHONY: build
 build:
-	@goreleaser build --rm-dist --snapshot --single-target
+	@goreleaser build --rm-dist --snapshot
 
 .PHONY: test
 test:
