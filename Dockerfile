@@ -1,12 +1,7 @@
-FROM alpine:latest as builder
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY manager-linux-amd64 /manager
 
-RUN apk --update add ca-certificates
+USER 65532:65532
 
-FROM scratch
-
-ARG BINARY
-
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY ${BINARY} /main
-
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["/manager"]

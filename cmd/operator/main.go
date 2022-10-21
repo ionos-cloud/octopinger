@@ -46,8 +46,8 @@ func printVersion() {
 
 func init() {
 	rootCmd.Flags().BoolVar(&f.enableLeaderElection, "leader-elect", f.enableLeaderElection, "only one controller")
-	rootCmd.Flags().StringVar(&f.metricsAddr, "metrics-addr", ":8080", "metrics endpoint")
-	rootCmd.Flags().StringVar(&f.probeAddr, "metrics-addr", ":8081", "health probe")
+	rootCmd.Flags().StringVar(&f.metricsAddr, "metrics-bind-address", ":8080", "metrics endpoint")
+	rootCmd.Flags().StringVar(&f.probeAddr, "health-probe-bind-address", ":8081", "health probe")
 
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
