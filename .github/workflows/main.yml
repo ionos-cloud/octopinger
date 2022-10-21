@@ -21,6 +21,7 @@ jobs:
     - uses: golangci/golangci-lint-action@v3
       with:
         version: latest
+        args: --timeout=5m
         # skip cache because of flaky behaviors
         skip-build-cache: true
         skip-pkg-cache: true
