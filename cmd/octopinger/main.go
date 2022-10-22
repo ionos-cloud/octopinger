@@ -40,7 +40,7 @@ func run(ctx context.Context) error {
 	}
 	zap.ReplaceGlobals(logger)
 
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	logger.Info("Goldpinger")
 
