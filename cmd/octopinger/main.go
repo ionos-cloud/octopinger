@@ -46,6 +46,9 @@ func run(ctx context.Context) error {
 
 	srv, _ := server.WithContext(ctx)
 
+	api := octopinger.NewAPI()
+	srv.Listen(api, false)
+
 	o := octopinger.NewServer()
 	srv.Listen(o, false)
 
