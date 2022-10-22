@@ -31,6 +31,20 @@ type Octopinger struct {
 // OctopingerSpec defines the desired state of Octopinger
 // +k8s:openapi-gen=true
 type OctopingerSpec struct {
+	// Version is the expected version of octopinger.
+	// The operator will eventually make the octopinger version
+	// equal to the expected version.
+	//
+	// The version must follow the [semver]( http://semver.org) format, for example "1.0.4".
+	// Only octopinger released versions are supported: https://github.com/ionos-cloud/octopinger/releases
+	//
+	Version string `json:"version"`
+
+	// Label is the value of the 'octopinger=' label to set on a node that should run octopinger.
+	Label string `json:"label"`
+
+	// Image is the Docker image to run for octopinger.
+	Image string `json:"image"`
 }
 
 //+kubebuilder:object:root=true
@@ -42,6 +56,85 @@ type OctopingerList struct {
 	Items           []Octopinger `json:"items"`
 }
 
+type OctopingerPhase string
+
+const (
+	OctopingerPhaseNone     OctopingerPhase = ""
+	OctopingerPhaseCreating OctopingerPhase = "Creating"
+	OctopingerPhaseRunning  OctopingerPhase = "Running"
+	OctopingerPhaseFailed   OctopingerPhase = "Failed"
+)
+
+type OctopingerConditionType string
+
+const (
+	OctopingerConditionReady = "Ready"
+
+	OctopingerConditionScalingUp   = "ScalingUp"
+	OctopingerConditionScalingDown = "ScalingDown"
+
+	OctopingerConditionUpgrading = "Upgrading"
+)
+
+type OctopingerCondition struct {
+	Type OctopingerConditionType `json:"type"`
+
+	Reason string `json:"reason"`
+
+	TransitionTime string `json:"transitionTime"`
+}
+
 // OctopingerStatus defines the observed state of Octopinger
 // +k8s:openapi-gen=true
-type OctopingerStatus struct{}
+type OctopingerStatus struct {
+	// Phase is the octopinger running phase.
+	Phase  OctopingerPhase `json:"phase"`
+	Reason string          `json:"reason"`
+
+	// ControlPaused indicates the operator pauses the control of
+	// octopinger.
+	ControlPaused bool `json:"controlPaused"`
+
+	// Condition keeps ten most recent octopinger conditions.
+	Conditions []OctopingerCondition `json:"conditions"`
+
+	// Size is the number of nodes the daemon is deployed to.
+	Size int `json:"size"`
+
+	// CurrentVersion is the current octopinger version.
+	CurrentVersion string `json:"currentVersion"`
+}
+
+// IsFailed ...
+func (cs *OctopingerStatus) IsFailed() bool {
+	if cs == nil {
+		return false
+	}
+
+	return cs.Phase == OctopingerPhaseFailed
+}
+
+func (cs *OctopingerStatus) SetPhase(p OctopingerPhase) {
+	cs.Phase = p
+}
+
+func (cs *OctopingerStatus) PauseControl() {
+	cs.ControlPaused = true
+}
+
+func (cs *OctopingerStatus) Control() {
+	cs.ControlPaused = false
+}
+
+// SetSize sets the current size of the cluster.
+func (cs *OctopingerStatus) SetSize(size int) {
+	cs.Size = size
+}
+
+func (cs *OctopingerStatus) SetCurrentVersion(v string) {
+	cs.CurrentVersion = v
+}
+
+func (cs *OctopingerStatus) SetReason(r string) {
+	cs.Reason = r
+}

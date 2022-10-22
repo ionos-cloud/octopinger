@@ -1,11 +1,5 @@
 VERSION ?= 0.0.3
 
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
-
-# Controller generation command
-CONTROLLER_GEN = go run sigs.k8s.io/controller-tools/cmd/controller-gen
-
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
 
@@ -15,11 +9,8 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 
 ##@ Development
 
-manifests:
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-
 generate:
-	$(CONTROLLER_GEN) object:headerFile="hack/copyright.go.txt" paths="./..."
+	@go generate ./...
 
 ##@ Build
 
@@ -47,6 +38,11 @@ vendor:
 	@go get -u ./...
 
 ##@ Deployment
-deploy: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+
+deploy: generate ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+remove: generate ## Remove controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default | kubectl delete -f -

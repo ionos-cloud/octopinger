@@ -10,12 +10,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	api "github.com/ionos-cloud/octopinger/api/v1alpha1"
+	"github.com/ionos-cloud/octopinger/pkg/controllers"
+	"github.com/ionos-cloud/octopinger/pkg/utils"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -71,16 +74,24 @@ func run(ctx context.Context) error {
 	printVersion()
 
 	options := manager.Options{
-		Namespace:              "",
-		Scheme:                 scheme,
-		MetricsBindAddress:     f.metricsAddr,
-		Port:                   9443,
-		HealthProbeBindAddress: f.probeAddr,
-		LeaderElection:         f.enableLeaderElection,
-		LeaderElectionID:       "j8yhqdnj.octopinger.io",
+		Namespace:                  "",
+		Scheme:                     scheme,
+		MetricsBindAddress:         f.metricsAddr,
+		Port:                       9443,
+		HealthProbeBindAddress:     f.probeAddr,
+		LeaderElection:             f.enableLeaderElection,
+		LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
+		LeaderElectionID:           "j8yhqdnj.octopinger.io",
+		NewClient:                  utils.DefaultNewClientWithMetrics,
+		BaseContext:                func() context.Context { return ctx },
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
+	if err != nil {
+		return err
+	}
+
+	err = setupControllers(f, mgr)
 	if err != nil {
 		return err
 	}
@@ -98,6 +109,22 @@ func run(ctx context.Context) error {
 	setupLog.Info("starting manager")
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setupControllers(f *flags, mgr ctrl.Manager) error {
+	k8sClient := mgr.GetClient()
+
+	daemonCtrl, err := controllers.NewDaemonReconciler(k8sClient, false)
+	if err != nil {
+		return err
+	}
+
+	err = daemonCtrl.SetupWithManager(mgr)
+	if err != nil {
 		return err
 	}
 
