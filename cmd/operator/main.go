@@ -116,14 +116,7 @@ func run(ctx context.Context) error {
 }
 
 func setupControllers(f *flags, mgr ctrl.Manager) error {
-	k8sClient := mgr.GetClient()
-
-	daemonCtrl, err := controllers.NewDaemonReconciler(k8sClient, false)
-	if err != nil {
-		return err
-	}
-
-	err = daemonCtrl.SetupWithManager(mgr)
+	err := controllers.NewDaemonReconciler(mgr)
 	if err != nil {
 		return err
 	}
