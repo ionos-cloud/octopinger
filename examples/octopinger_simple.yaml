@@ -1,0 +1,9 @@
+apiVersion: octopinger.io/v1alpha1
+kind: Octopinger
+metadata:
+  name: demo
+  namespace: octopinger-operator-system
+spec:
+  image: ghcr.io/ionos-cloud/octopinger/octopinger
+  label: octopinger
+  version: 0.0.1

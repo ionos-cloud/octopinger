@@ -6,7 +6,24 @@ builds:
     binary: manager-{{.Os}}-{{.Arch}}
     main: cmd/operator/main.go
     goos:
-      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    ignore:
+        - goos: darwin
+          goarch: 386
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+        - -s -w
+    no_unique_dist_dir: true
+  -
+    id: octopinger
+    binary: octopinger-{{.Os}}-{{.Arch}}
+    main: cmd/octopinger/main.go
+    goos:
       - linux
     goarch:
       - amd64
@@ -27,6 +44,11 @@ archives:
     builds:
       - manager
     name_template: "manager_{{.Version}}_{{.Os}}_{{.Arch}}"
+  -
+    id: octopinger
+    builds:
+      - octopinger
+    name_template: "octopinger_{{.Version}}_{{.Os}}_{{.Arch}}"
 
 dockers:
   -

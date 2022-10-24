@@ -54,8 +54,7 @@ rules:
 - apiGroups:
   - octopinger.io
   resources:
-  - applications
-  - appprojects
+  - octopingers
   verbs:
   - '*'
 - apiGroups:
