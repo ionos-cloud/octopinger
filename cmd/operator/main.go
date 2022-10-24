@@ -121,5 +121,10 @@ func setupControllers(f *flags, mgr ctrl.Manager) error {
 		return err
 	}
 
+	err = controllers.NewConfigReconciler(mgr)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
