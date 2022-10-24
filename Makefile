@@ -12,15 +12,15 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 generate:
 	@go generate ./...
 
-docker:
-	minikube -p goldpinger image rm ${IMG}
-	minikube -p goldpinger image rm ghcr.io/ionos-cloud/octopinger/octopinger:latest
+docker-minikube:
+	minikube -p octopinger image rm ${IMG}
+	minikube -p octopinger image rm ghcr.io/ionos-cloud/octopinger/octopinger:latest
 
 	@docker build --build-arg BINARY=octopinger-linux-amd64 -f Dockerfile -t ghcr.io/ionos-cloud/octopinger/octopinger:latest ./dist
 	@docker build --build-arg BINARY=manager-linux-amd64 -f Dockerfile -t ${IMG} ./dist
 
-	minikube -p goldpinger image load ${IMG}
-	minikube -p goldpinger image load ghcr.io/ionos-cloud/octopinger/octopinger:latest
+	minikube -p octopinger image load ${IMG}
+	minikube -p octopinger image load ghcr.io/ionos-cloud/octopinger/octopinger:latest
 
 ##@ Build
 
