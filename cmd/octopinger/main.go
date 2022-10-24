@@ -42,7 +42,7 @@ func run(ctx context.Context) error {
 
 	defer func() { _ = logger.Sync() }()
 
-	logger.Info("Goldpinger")
+	logger.Info("Octopinger")
 
 	srv, _ := server.WithContext(ctx)
 
