@@ -64,7 +64,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"daemonset":  o.Name + "-daemonset-",
+						"daemonset":  o.Name + "-daemonset",
 						"octopinger": o.Name,
 					},
 				},
@@ -98,8 +98,6 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 
 		err = d.client.Create(ctx, deploy)
 		if err != nil {
-			log.Error(err, "could not create daemonset")
-
 			return reconcile.Result{}, err
 		}
 	}
