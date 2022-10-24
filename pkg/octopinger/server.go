@@ -12,7 +12,12 @@ import (
 
 type server struct {
 	nodeList string
-	logger   *zap.Logger
+	probes   []Probe
+
+	timeout  time.Duration
+	interval time.Duration
+
+	logger *zap.Logger
 	srv.Listener
 }
 
@@ -33,6 +38,27 @@ func WithLogger(logger *zap.Logger) Opt {
 	}
 }
 
+// WithTimeout ...
+func WithTimeout(timeout time.Duration) Opt {
+	return func(s *server) {
+		s.timeout = timeout
+	}
+}
+
+// WithInterval ...
+func WithInterval(interval time.Duration) Opt {
+	return func(s *server) {
+		s.interval = interval
+	}
+}
+
+// WithProbes ...
+func WithProbes(probes ...Probe) Opt {
+	return func(s *server) {
+		s.probes = append(s.probes, probes...)
+	}
+}
+
 // NewServer ...
 func NewServer(opts ...Opt) *server {
 	s := new(server)
@@ -47,7 +73,7 @@ func NewServer(opts ...Opt) *server {
 // Start ...
 func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) func() error {
 	return func() error {
-		ticker := time.NewTicker(5 * time.Second)
+		ticker := time.NewTicker(s.interval)
 		defer ticker.Stop()
 
 		for {
@@ -62,8 +88,17 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 				nn := strings.Split(string(nodes), ",")
 
 				for _, node := range nn {
-					s.logger.Sugar().Infof("configuring %s", node)
+					for _, p := range s.probes {
+						err := p.Do(ctx, node, s.timeout)
+						if err != nil {
+							s.logger.Sugar().Error("could not ping: %w", err)
+						}
+
+						s.logger.Sugar().Infof("successfully pinged: %s", node)
+					}
 				}
+
+				ticker.Reset(s.interval)
 			}
 		}
 	}
