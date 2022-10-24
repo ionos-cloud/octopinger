@@ -11,7 +11,8 @@ import (
 )
 
 type flags struct {
-	Debug bool
+	Debug    bool
+	NodeList string
 }
 
 var f = &flags{}
@@ -25,6 +26,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.Flags().BoolVar(&f.Debug, "debug", f.Debug, "debug")
+	rootCmd.Flags().StringVar(&f.NodeList, "config-nodes", "/etc/config/nodes", "node list")
 }
 
 func main() {
@@ -49,7 +51,10 @@ func run(ctx context.Context) error {
 	api := octopinger.NewAPI()
 	srv.Listen(api, false)
 
-	o := octopinger.NewServer()
+	o := octopinger.NewServer(
+		octopinger.WithNodeList(f.NodeList),
+		octopinger.WithLogger(logger),
+	)
 	srv.Listen(o, false)
 
 	if err := srv.Wait(); errors.Is(err, &server.Error{}) {

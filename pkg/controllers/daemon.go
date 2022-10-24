@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
@@ -29,23 +30,51 @@ func NewDaemonReconciler(mgr manager.Manager) error {
 			source.NewKindWithCache(&v1alpha1.Octopinger{}, mgr.GetCache()),
 			&handler.EnqueueRequestForObject{}).
 		Complete(&daemonReconciler{
-			client: mgr.GetClient(),
+			Client: mgr.GetClient(),
 			scheme: mgr.GetScheme(),
 		})
 }
 
 type daemonReconciler struct {
-	client client.Client
+	client.Client
 	scheme *runtime.Scheme
 }
 
+// Reconcile ...
 func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 
 	o := &v1alpha1.Octopinger{}
 
-	err := d.client.Get(ctx, r.NamespacedName, o)
+	err := d.Get(ctx, r.NamespacedName, o)
 	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	nodeList := &corev1.NodeList{}
+	err = d.List(ctx, nodeList)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	configMap := &corev1.ConfigMap{}
+	err = d.Get(ctx, types.NamespacedName{Name: o.Name + "-config", Namespace: o.Namespace}, configMap, &client.GetOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return reconcile.Result{}, err
+	}
+
+	configMap = &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      o.Name + "-config",
+			Namespace: o.Namespace,
+		},
+		Data: map[string]string{
+			"nodes": "",
+		},
+	}
+
+	err = d.Create(ctx, configMap)
+	if err != nil && !errors.IsAlreadyExists(err) {
 		return reconcile.Result{}, err
 	}
 
@@ -71,8 +100,33 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:  "octopinger-container",
-							Image: o.Spec.Image,
+							Name:            "octopinger-container",
+							ImagePullPolicy: corev1.PullIfNotPresent,
+							Image:           o.Spec.Image,
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "config-vol",
+									MountPath: "/etc/config",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "config-vol",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: o.Name + "-config",
+									},
+									Items: []corev1.KeyToPath{
+										{
+											Key:  "nodes",
+											Path: "nodes",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -88,16 +142,19 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 	}
 
 	found := &appsv1.DaemonSet{}
-	err = d.client.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+	err = d.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && !errors.IsNotFound(err) {
+
 		return reconcile.Result{}, err
 	}
 
 	if errors.IsNotFound(err) {
 		log.Info("creating daemonset")
 
-		err = d.client.Create(ctx, deploy)
+		err = d.Create(ctx, deploy)
 		if err != nil {
+			fmt.Println(err)
+
 			return reconcile.Result{}, err
 		}
 	}
@@ -106,7 +163,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		log.Info("updating daemonset")
 
 		found.Spec = deploy.Spec
-		err = d.client.Update(ctx, found)
+		err = d.Update(ctx, found)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

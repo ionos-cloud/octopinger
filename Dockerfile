@@ -1,7 +1,9 @@
 FROM gcr.io/distroless/static:nonroot
+ARG BINARY
+
 WORKDIR /
-COPY manager-linux-amd64 /manager
+COPY ${BINARY} /main
 
 USER 65532:65532
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/main"]

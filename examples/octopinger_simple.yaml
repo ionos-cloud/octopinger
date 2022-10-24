@@ -4,6 +4,6 @@ metadata:
   name: demo
   namespace: default
 spec:
-  image: ghcr.io/ionos-cloud/octopinger/octopinger
+  image: ghcr.io/ionos-cloud/octopinger/octopinger:latest
   label: octopinger
   version: 0.0.1

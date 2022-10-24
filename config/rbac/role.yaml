@@ -15,6 +15,7 @@ rules:
   - namespaces
   - persistentvolumeclaims
   - pods
+  - nodes
   - secrets
   - serviceaccounts
   - services
