@@ -43,6 +43,32 @@ spec:
                 description: Label is the value of the 'octopinger=' label to set
                   on a node that should run octopinger.
                 type: string
+              probes:
+                description: Probes ...
+                items:
+                  description: Probe ...
+                  properties:
+                    external:
+                      description: External ...
+                      items:
+                        type: string
+                      type: array
+                    interval:
+                      description: Interval ...
+                      type: string
+                    timeout:
+                      description: Timeout ...
+                      type: string
+                    type:
+                      description: Type ...
+                      type: string
+                  required:
+                  - external
+                  - interval
+                  - timeout
+                  - type
+                  type: object
+                type: array
               version:
                 description: "Version is the expected version of octopinger. The operator
                   will eventually make the octopinger version equal to the expected
@@ -53,6 +79,7 @@ spec:
             required:
             - image
             - label
+            - probes
             - version
             type: object
           status:

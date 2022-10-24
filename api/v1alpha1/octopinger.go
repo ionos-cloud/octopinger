@@ -45,6 +45,27 @@ type OctopingerSpec struct {
 
 	// Image is the Docker image to run for octopinger.
 	Image string `json:"image"`
+
+	// Probes ...
+	Probes Probes `json:"probes"`
+}
+
+// Probes ...
+type Probes []Probe
+
+// Probe ...
+type Probe struct {
+	// Type ...
+	Type string `json:"type"`
+
+	// Timeout ...
+	Timeout string `json:"timeout"`
+
+	// Interval ...
+	Interval string `json:"interval"`
+
+	// External ...
+	External []string `json:"external"`
 }
 
 //+kubebuilder:object:root=true
