@@ -43,14 +43,25 @@ var (
 )
 
 type Metrics struct {
-	nodesHealthGauge  *prometheus.GaugeVec
-	errorsCounter     *prometheus.CounterVec
-	icmpErrorsCounter *prometheus.CounterVec
+	nodesHealthGauge   *prometheus.GaugeVec
+	errorsCounter      *prometheus.CounterVec
+	icmpErrorsCounter  *prometheus.CounterVec
+	clusterHealthGauge *prometheus.GaugeVec
 }
 
 // NewMetrics ...
 func NewMetrics() *Metrics {
 	m := new(Metrics)
+
+	m.clusterHealthGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_cluster_health_total",
+			Help: "1 if all check pass, 0 otherwise",
+		},
+		[]string{
+			"instance",
+		},
+	)
 
 	m.nodesHealthGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -93,6 +104,7 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.nodesHealthGauge.Collect(ch)
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
+	m.clusterHealthGauge.Collect(ch)
 }
 
 // Describe ...
@@ -100,6 +112,7 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.nodesHealthGauge.Describe(ch)
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
+	m.clusterHealthGauge.Describe(ch)
 }
 
 // Monitor ...
@@ -122,15 +135,30 @@ func NewMonitor(metrics *Metrics) (*Monitor, error) {
 		return nil, err
 	}
 
+	m.metrics.clusterHealthGauge.GetMetricWith(prometheus.Labels{"instance": ""})
+	if err != nil {
+		return nil, err
+	}
+
 	return m, nil
 }
 
+// SetClusterHealth ...
+func (m *Monitor) SetClusterHealthy(instance string, healthy bool) {
+	value := 1.0
+	if !healthy {
+		value = 0
+	}
+
+	m.metrics.clusterHealthGauge.WithLabelValues(instance).Set(value)
+}
+
 // CountErrors ...
-func (m *Metrics) CountError(instance, errorType string) {
-	m.errorsCounter.WithLabelValues(instance, errorType).Inc()
+func (m *Monitor) CountError(instance, errorType string) {
+	m.metrics.errorsCounter.WithLabelValues(instance, errorType).Inc()
 }
 
 // CountICMPErrors ...
-func (m *Metrics) CountICMPErrors(instance, errorType string) {
-	m.icmpErrorsCounter.WithLabelValues(instance, errorType).Inc()
+func (m *Monitor) CountICMPErrors(instance, errorType string) {
+	m.metrics.icmpErrorsCounter.WithLabelValues(instance, errorType).Inc()
 }

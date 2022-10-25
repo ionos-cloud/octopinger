@@ -17,7 +17,7 @@ docker-minikube:
 	minikube -p octopinger image rm ghcr.io/ionos-cloud/octopinger/octopinger:latest
 
 	@docker build --build-arg BINARY=octopinger-linux-amd64 -f Dockerfile -t ghcr.io/ionos-cloud/octopinger/octopinger:latest ./dist
-	@docker build --build-arg BINARY=manager-linux-amd64 -f Dockerfile -t ${IMG} ./dist
+	@docker build --build-arg BINARY=operator-linux-amd64 -f Dockerfile -t ${IMG} ./dist
 
 	minikube -p octopinger image load ${IMG}
 	minikube -p octopinger image load ghcr.io/ionos-cloud/octopinger/octopinger:latest

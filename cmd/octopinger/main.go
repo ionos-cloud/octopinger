@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/ionos-cloud/octopinger/pkg/octopinger"
 	"github.com/katallaxie/pkg/server"
 	"github.com/spf13/cobra"
@@ -12,8 +13,10 @@ import (
 
 type flags struct {
 	Debug      bool
-	ConfigPath string
-	StatusAddr string
+	ConfigPath string `env:"CONFIG_PATH" envDefault:"/etc/config"`
+	StatusAddr string `env:"STATUS_ADDR" envDefault:"0.0.0.0:8081"`
+	PodIP      string `env:"POD_IP"`
+	Nodename   string `env:"NODE_NAME"`
 }
 
 var f = &flags{}
@@ -21,14 +24,19 @@ var f = &flags{}
 var rootCmd = &cobra.Command{
 	Use: "octopinger",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return run(cmd.Context())
+		return runE(cmd.Context())
 	},
 }
 
 func init() {
+	if err := env.Parse(f); err != nil {
+		panic(err)
+	}
+
 	rootCmd.Flags().BoolVar(&f.Debug, "debug", f.Debug, "debug")
-	rootCmd.Flags().StringVar(&f.ConfigPath, "config", "/etc/config", "config")
-	rootCmd.Flags().StringVar(&f.StatusAddr, "status-addr", "0.0.0.0:8081", "status")
+	rootCmd.Flags().StringVar(&f.ConfigPath, "config", f.ConfigPath, "config")
+	rootCmd.Flags().StringVar(&f.StatusAddr, "status-addr", f.StatusAddr, "status addr")
+	rootCmd.Flags().StringVar(&f.Nodename, "nodename", f.Nodename, "node name")
 }
 
 func main() {
@@ -37,7 +45,7 @@ func main() {
 	}
 }
 
-func run(ctx context.Context) error {
+func runE(ctx context.Context) error {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		return err
@@ -46,7 +54,7 @@ func run(ctx context.Context) error {
 
 	defer func() { _ = logger.Sync() }()
 
-	logger.Info("Octopinger")
+	logger.Sugar().Infof("Starting octopinger on %s", f.Nodename)
 
 	srv, _ := server.WithContext(ctx)
 
@@ -69,6 +77,7 @@ func run(ctx context.Context) error {
 		octopinger.WithLogger(logger),
 		octopinger.WithConfigPath(f.ConfigPath),
 		octopinger.WithMonitor(m),
+		octopinger.WithNodeName(f.Nodename),
 	)
 	srv.Listen(o, false)
 

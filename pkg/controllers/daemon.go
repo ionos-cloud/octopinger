@@ -119,6 +119,16 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 									MountPath: "/etc/config",
 								},
 							},
+							Env: []corev1.EnvVar{
+								{
+									Name: "NODE_NAME",
+									ValueFrom: &corev1.EnvVarSource{
+										FieldRef: &corev1.ObjectFieldSelector{
+											FieldPath: "spec.nodeName",
+										},
+									},
+								},
+							},
 						},
 					},
 					Volumes: []corev1.Volume{

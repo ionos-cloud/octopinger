@@ -10,6 +10,7 @@ import (
 
 type server struct {
 	configPath string
+	nodeName   string
 
 	monitor *Monitor
 	logger  *zap.Logger
@@ -37,6 +38,13 @@ func WithConfigPath(path string) Opt {
 func WithMonitor(m *Monitor) Opt {
 	return func(s *server) {
 		s.monitor = m
+	}
+}
+
+// WithNodeName ...
+func WithNodeName(nodeName string) Opt {
+	return func(s *server) {
+		s.nodeName = nodeName
 	}
 }
 
@@ -79,6 +87,8 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 						s.logger.Sugar().Infof("successfully pinged: %s", n)
 					}
 				}
+
+				s.monitor.SetClusterHealthy(s.nodeName, true)
 
 				ticker.Reset(cfg.ICMP.Interval)
 			}
