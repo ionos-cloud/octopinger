@@ -132,7 +132,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
 									Add: []corev1.Capability{
-										"CAP_NET_RAW",
+										"NET_RAW",
 									},
 								},
 							},
