@@ -29,6 +29,7 @@ func (i *icmpProbe) Do(ctx context.Context, addr string, timeout time.Duration) 
 	if err != nil {
 		return err
 	}
+	pinger.SetPrivileged(true)
 
 	go func() {
 		<-ctx.Done()
