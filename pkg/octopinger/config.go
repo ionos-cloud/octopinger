@@ -12,10 +12,43 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+// NodeList ...
+type NodeList struct {
+	nodes []string
+}
+
+// Nodes ...
+func (n *NodeList) Nodes() []string {
+	return n.nodes
+}
+
+// Load ...
+func (n *NodeList) Load(base, file string) error {
+	n.nodes = nil
+
+	f, err := os.Open(path.Join(base, file))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+
+	for scanner.Scan() {
+		n.nodes = append(n.nodes, scanner.Text())
+	}
+
+	return nil
+}
+
+// NewNodeList ...
+func NewNodeList() *NodeList {
+	return &NodeList{}
+}
+
 // Config ...
 type Config struct {
-	ICMP  ICMPConfig
-	Nodes []string
+	ICMP ICMPConfig
 }
 
 // ICMPConfig ...
@@ -70,33 +103,9 @@ func (c Config) Load(base string) (Config, error) {
 		return Config{}, nil
 	}
 
-	nodes, err := loadList(base, "nodes")
-	if err != nil {
-		return Config{}, nil
-	}
-
 	return Config{
-		ICMP:  icmpCfg,
-		Nodes: nodes,
+		ICMP: icmpCfg,
 	}, nil
-}
-
-func loadList(base, file string) ([]string, error) {
-	list := []string{}
-
-	f, err := os.Open(path.Join(base, file))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-
-	for scanner.Scan() {
-		list = append(list, scanner.Text())
-	}
-
-	return list, nil
 }
 
 func loadKeyValues(base, file string) (map[string]string, error) {

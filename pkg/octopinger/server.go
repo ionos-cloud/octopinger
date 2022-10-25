@@ -62,6 +62,13 @@ func NewServer(opts ...Opt) *server {
 // Start ...
 func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) func() error {
 	return func() error {
+		cfg, err := Config{}.Load(s.configPath)
+		if err != nil {
+			return err
+		}
+
+		nodeList := NewNodeList()
+
 		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
 
@@ -69,26 +76,23 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			select {
 			case <-ctx.Done():
 			case <-ticker.C:
-				cfg, err := Config{}.Load(s.configPath)
+				err := nodeList.Load(s.configPath, "nodes")
 				if err != nil {
 					return err
 				}
 
-				for _, n := range cfg.Nodes {
-					s.logger.Sugar().Info("processing node: %s", n)
-
+				healthy := true
+				for _, n := range nodeList.Nodes() {
 					if cfg.ICMP.Enabled {
 						icmp := NewICMPProbe()
 						err := icmp.Do(ctx, n, cfg.ICMP.Timeout)
 						if err != nil {
-							s.logger.Sugar().Error("could not ping: %w", err)
-						} else {
-							s.logger.Sugar().Infof("successfully pinged: %s", n)
+							healthy = false
 						}
 					}
 				}
 
-				s.monitor.SetClusterHealthy(s.nodeName, true)
+				s.monitor.SetClusterHealthy(s.nodeName, healthy)
 
 				ticker.Reset(cfg.ICMP.Interval)
 			}
