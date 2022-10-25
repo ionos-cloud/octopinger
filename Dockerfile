@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static
 ARG BINARY
 
 WORKDIR /

@@ -52,7 +52,7 @@ archives:
 
 dockers:
   -
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.operator
     goos: linux
     goarch: amd64
     ids:
