@@ -13,7 +13,8 @@ type Probe interface {
 	Do(context.Context, string, time.Duration) error
 }
 
-type icmpProbe struct{}
+type icmpProbe struct {
+}
 
 // NewICMPProbe ...
 func NewICMPProbe() *icmpProbe {
@@ -39,7 +40,6 @@ func (i *icmpProbe) Do(ctx context.Context, addr string, timeout time.Duration) 
 	if err != nil {
 		return err
 	}
-	// stats := pinger.Statistics()
 
 	return nil
 }

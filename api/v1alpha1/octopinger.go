@@ -1,6 +1,11 @@
 package v1alpha1
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"golang.org/x/exp/maps"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -53,19 +58,52 @@ type OctopingerSpec struct {
 // Probes ...
 type Probes []Probe
 
+// ConfigMap ...
+func (p Probes) ConfigMap() map[string]string {
+	cfg := make(map[string]string)
+
+	for _, probe := range p {
+		maps.Copy(cfg, probe.ConfigMap())
+	}
+
+	delete(cfg, "")
+
+	return cfg
+}
+
+// ConfigMap ...
+func (p Probe) ConfigMap() map[string]string {
+	cfg := map[string]string{
+		fmt.Sprintf("probes.%s.enabled", p.Type):    strconv.FormatBool(p.Enabled),
+		fmt.Sprintf("probes.%s.properties", p.Type): p.Properties.KeyValues(),
+	}
+
+	return cfg
+}
+
+// Properties ...
+type Properties map[string]string
+
+// KeyValues ...
+func (p Properties) KeyValues() string {
+	var lines []string
+	for k, v := range p {
+		lines = append(lines, fmt.Sprintf("%s:%v", k, v))
+	}
+
+	return strings.Join(lines, "\n")
+}
+
 // Probe ...
 type Probe struct {
 	// Type ...
 	Type string `json:"type"`
 
-	// Timeout ...
-	Timeout string `json:"timeout"`
+	// Enabled ...
+	Enabled bool `json:"enabled"`
 
-	// Interval ...
-	Interval string `json:"interval"`
-
-	// External ...
-	External []string `json:"external"`
+	// Properties ...
+	Properties Properties `json:"properties"`
 }
 
 //+kubebuilder:object:root=true

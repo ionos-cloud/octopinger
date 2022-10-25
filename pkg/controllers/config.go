@@ -4,11 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ionos-cloud/octopinger/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -39,11 +38,11 @@ func OcotopingerManaged() predicate.Predicate {
 
 		for _, r := range refs {
 			if r.Kind == "Octopinger" {
-				return false
+				return true
 			}
 		}
 
-		return true
+		return false
 	})
 }
 
@@ -52,11 +51,11 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 	ds := &appsv1.DaemonSet{}
 	err := s.Get(ctx, r.NamespacedName, ds)
 	if err != nil {
-		return reconcile.Result{}, nil
+		return reconcile.Result{}, err
 	}
 
-	o := &v1alpha1.Octopinger{}
-	err = s.Get(ctx, r.NamespacedName, o)
+	cfg := &corev1.ConfigMap{}
+	err = s.Get(ctx, types.NamespacedName{Namespace: ds.Namespace, Name: strings.TrimSuffix(ds.Name, "-daemonset") + "-config"}, cfg)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -67,22 +66,13 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		return ctrl.Result{}, err
 	}
 
-	ips := make([]string, 0)
+	ips := []string{}
 	for _, p := range pods.Items {
 		ips = append(ips, p.Status.PodIP)
 	}
+	cfg.Data["nodes"] = strings.Join(ips, "\n")
 
-	configMap := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      o.Name + "-config",
-			Namespace: r.Namespace,
-		},
-		Data: map[string]string{
-			"nodes": strings.Join(ips, ","),
-		},
-	}
-
-	err = s.Update(ctx, configMap)
+	err = s.Update(ctx, cfg)
 	if err != nil {
 		return reconcile.Result{}, err
 	}

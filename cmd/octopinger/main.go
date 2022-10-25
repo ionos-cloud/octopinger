@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/ionos-cloud/octopinger/pkg/octopinger"
 	"github.com/katallaxie/pkg/server"
@@ -12,11 +11,8 @@ import (
 )
 
 type flags struct {
-	Debug     bool
-	NodeList  string
-	Interval  time.Duration
-	Timeout   time.Duration
-	ICMPProbe bool
+	Debug      bool
+	ConfigPath string
 }
 
 var f = &flags{}
@@ -30,10 +26,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.Flags().BoolVar(&f.Debug, "debug", f.Debug, "debug")
-	rootCmd.Flags().DurationVar(&f.Interval, "interval", time.Duration(time.Second*1), "interval")
-	rootCmd.Flags().DurationVar(&f.Timeout, "timeout", time.Duration(time.Second*5), "timeout")
-	rootCmd.Flags().StringVar(&f.NodeList, "config-nodes", "/etc/config/nodes", "node list")
-	rootCmd.Flags().BoolVar(&f.ICMPProbe, "icmp-probe", true, "icmp")
+	rootCmd.Flags().StringVar(&f.ConfigPath, "config", "/etc/config", "config")
 }
 
 func main() {
@@ -58,17 +51,9 @@ func run(ctx context.Context) error {
 	api := octopinger.NewAPI()
 	srv.Listen(api, false)
 
-	probes := make([]octopinger.Probe, 0)
-	if f.ICMPProbe {
-		probes = append(probes, octopinger.NewICMPProbe())
-	}
-
 	o := octopinger.NewServer(
-		octopinger.WithNodeList(f.NodeList),
 		octopinger.WithLogger(logger),
-		octopinger.WithProbes(probes...),
-		octopinger.WithInterval(f.Interval),
-		octopinger.WithTimeout(f.Timeout),
+		octopinger.WithConfigPath(f.ConfigPath),
 	)
 	srv.Listen(o, false)
 

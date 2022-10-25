@@ -48,24 +48,20 @@ spec:
                 items:
                   description: Probe ...
                   properties:
-                    external:
-                      description: External ...
-                      items:
+                    enabled:
+                      description: Enabled ...
+                      type: boolean
+                    properties:
+                      additionalProperties:
                         type: string
-                      type: array
-                    interval:
-                      description: Interval ...
-                      type: string
-                    timeout:
-                      description: Timeout ...
-                      type: string
+                      description: Properties ...
+                      type: object
                     type:
                       description: Type ...
                       type: string
                   required:
-                  - external
-                  - interval
-                  - timeout
+                  - enabled
+                  - properties
                   - type
                   type: object
                 type: array

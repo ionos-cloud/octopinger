@@ -7,3 +7,11 @@ spec:
   image: ghcr.io/ionos-cloud/octopinger/octopinger:latest
   label: octopinger
   version: 0.0.1
+  probes:
+    - type: icmp
+      enabled: true
+      properties:
+        timeout: 1m
+        interval: 1m
+        external: |
+          1.1.1.1

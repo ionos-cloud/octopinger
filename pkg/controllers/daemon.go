@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
@@ -63,19 +62,30 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		return reconcile.Result{}, err
 	}
 
+	cfg := o.Spec.Probes.ConfigMap()
+	cfg["nodes"] = ""
+
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      o.Name + "-config",
 			Namespace: o.Namespace,
 		},
-		Data: map[string]string{
-			"nodes": "",
-		},
+		Data: cfg,
 	}
 
 	err = d.Create(ctx, configMap)
 	if err != nil && !errors.IsAlreadyExists(err) {
 		return reconcile.Result{}, err
+	}
+
+	err = controllerutil.SetControllerReference(o, configMap, d.scheme)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	items := []corev1.KeyToPath{}
+	for k := range cfg {
+		items = append(items, corev1.KeyToPath{Key: k, Path: k})
 	}
 
 	deploy := &appsv1.DaemonSet{
@@ -119,12 +129,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 									LocalObjectReference: corev1.LocalObjectReference{
 										Name: o.Name + "-config",
 									},
-									Items: []corev1.KeyToPath{
-										{
-											Key:  "nodes",
-											Path: "nodes",
-										},
-									},
+									Items: items,
 								},
 							},
 						},
@@ -144,7 +149,6 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 	found := &appsv1.DaemonSet{}
 	err = d.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && !errors.IsNotFound(err) {
-
 		return reconcile.Result{}, err
 	}
 
@@ -153,8 +157,6 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 
 		err = d.Create(ctx, deploy)
 		if err != nil {
-			fmt.Println(err)
-
 			return reconcile.Result{}, err
 		}
 	}

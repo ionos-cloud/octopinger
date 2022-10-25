@@ -2,8 +2,6 @@ package octopinger
 
 import (
 	"context"
-	"os"
-	"strings"
 	"time"
 
 	srv "github.com/katallaxie/pkg/server"
@@ -11,11 +9,7 @@ import (
 )
 
 type server struct {
-	nodeList string
-	probes   []Probe
-
-	timeout  time.Duration
-	interval time.Duration
+	configPath string
 
 	logger *zap.Logger
 	srv.Listener
@@ -24,13 +18,6 @@ type server struct {
 // Opt ...
 type Opt func(*server)
 
-// WithNodeList ...
-func WithNodeList(nodeList string) Opt {
-	return func(s *server) {
-		s.nodeList = nodeList
-	}
-}
-
 // WithLogger ...
 func WithLogger(logger *zap.Logger) Opt {
 	return func(s *server) {
@@ -38,24 +25,10 @@ func WithLogger(logger *zap.Logger) Opt {
 	}
 }
 
-// WithTimeout ...
-func WithTimeout(timeout time.Duration) Opt {
+// WithConfigPath ...
+func WithConfigPath(path string) Opt {
 	return func(s *server) {
-		s.timeout = timeout
-	}
-}
-
-// WithInterval ...
-func WithInterval(interval time.Duration) Opt {
-	return func(s *server) {
-		s.interval = interval
-	}
-}
-
-// WithProbes ...
-func WithProbes(probes ...Probe) Opt {
-	return func(s *server) {
-		s.probes = append(s.probes, probes...)
+		s.configPath = path
 	}
 }
 
@@ -73,32 +46,33 @@ func NewServer(opts ...Opt) *server {
 // Start ...
 func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) func() error {
 	return func() error {
-		ticker := time.NewTicker(s.interval)
+		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
 
 		for {
 			select {
 			case <-ctx.Done():
 			case <-ticker.C:
-				nodes, err := os.ReadFile(s.nodeList)
+				cfg, err := Config{}.Load(s.configPath)
 				if err != nil {
 					return err
 				}
 
-				nn := strings.Split(string(nodes), ",")
+				for _, n := range cfg.Nodes {
+					s.logger.Sugar().Info("processing node: %s", n)
 
-				for _, node := range nn {
-					for _, p := range s.probes {
-						err := p.Do(ctx, node, s.timeout)
+					if cfg.ICMP.Enabled {
+						icmp := NewICMPProbe()
+						err := icmp.Do(ctx, n, cfg.ICMP.Timeout)
 						if err != nil {
 							s.logger.Sugar().Error("could not ping: %w", err)
 						}
 
-						s.logger.Sugar().Infof("successfully pinged: %s", node)
+						s.logger.Sugar().Infof("successfully pinged: %s", n)
 					}
 				}
 
-				ticker.Reset(s.interval)
+				ticker.Reset(cfg.ICMP.Interval)
 			}
 		}
 	}

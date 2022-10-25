@@ -12,6 +12,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/spf13/cobra v1.6.0
 	go.uber.org/zap v1.21.0
+	golang.org/x/exp v0.0.0-20221023144134-a1e5550cf13e
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
