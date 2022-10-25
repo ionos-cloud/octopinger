@@ -2,8 +2,8 @@ project_name: octopinger
 
 builds:
   -
-    id: manager
-    binary: manager-{{.Os}}-{{.Arch}}
+    id: operator
+    binary: operator-{{.Os}}-{{.Arch}}
     main: cmd/operator/main.go
     goos:
       - linux
@@ -40,10 +40,10 @@ builds:
 
 archives:
   -
-    id: manager
+    id: operator
     builds:
-      - manager
-    name_template: "manager_{{.Version}}_{{.Os}}_{{.Arch}}"
+      - operator
+    name_template: "operator_{{.Version}}_{{.Os}}_{{.Arch}}"
   -
     id: octopinger
     builds:
@@ -56,18 +56,36 @@ dockers:
     goos: linux
     goarch: amd64
     ids:
-      - manager
+      - operator
     image_templates:
-      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager:latest"
-      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager:{{.Tag}}"
-      - "ghcr.io/ionos-cloud/{{.ProjectName}}/manager"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/operator:latest"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/operator:{{.Tag}}"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/operator"
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--build-arg=BINARY=manager-linux-amd64"
+      - "--build-arg=BINARY=operator-linux-amd64"
+      - "--platform=linux/amd64"
+  -
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+    ids:
+      - octopinger
+    image_templates:
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/octopinger:latest"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/octopinger:{{.Tag}}"
+      - "ghcr.io/ionos-cloud/{{.ProjectName}}/octopinger"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--build-arg=BINARY=octopinger-linux-amd64"
       - "--platform=linux/amd64"
 
 gomod:
@@ -75,6 +93,8 @@ gomod:
 
 release:
   draft: false
+  extra_files:
+    - glob: ./manifests/crd/bases/octopinger.io_octopingers.yaml
 
 snapshot:
   name_template: "{{.Tag}}"

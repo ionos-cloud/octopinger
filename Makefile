@@ -50,9 +50,9 @@ vendor:
 ##@ Deployment
 
 deploy: generate ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	cd manifests/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build manifests/default | kubectl apply -f -
 
 remove: generate ## Remove controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl delete -f -
+	cd manifests/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build manifests/default | kubectl delete -f -
