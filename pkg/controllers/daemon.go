@@ -111,7 +111,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 					Containers: []corev1.Container{
 						{
 							Name:            "octopinger-container",
-							ImagePullPolicy: corev1.PullIfNotPresent,
+							ImagePullPolicy: corev1.PullAlways,
 							Image:           o.Spec.Image,
 							VolumeMounts: []corev1.VolumeMount{
 								{
