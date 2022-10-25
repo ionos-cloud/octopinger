@@ -1,0 +1,218 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  name: octopingers.octopinger.io
+spec:
+  group: octopinger.io
+  names:
+    kind: Octopinger
+    listKind: OctopingerList
+    plural: octopingers
+    singular: octopinger
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Octopinger is the Schema for the octopinger API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: OctopingerSpec defines the desired state of Octopinger
+            properties:
+              image:
+                description: Image is the Docker image to run for octopinger.
+                type: string
+              label:
+                description: Label is the value of the 'octopinger=' label to set
+                  on a node that should run octopinger.
+                type: string
+              probes:
+                description: Probes ...
+                items:
+                  description: Probe ...
+                  properties:
+                    enabled:
+                      description: Enabled ...
+                      type: boolean
+                    properties:
+                      additionalProperties:
+                        type: string
+                      description: Properties ...
+                      type: object
+                    type:
+                      description: Type ...
+                      type: string
+                  required:
+                  - enabled
+                  - properties
+                  - type
+                  type: object
+                type: array
+              version:
+                description: "Version is the expected version of octopinger. The operator
+                  will eventually make the octopinger version equal to the expected
+                  version. \n The version must follow the [semver]( http://semver.org)
+                  format, for example \"1.0.4\". Only octopinger released versions
+                  are supported: https://github.com/ionos-cloud/octopinger/releases"
+                type: string
+            required:
+            - image
+            - label
+            - probes
+            - version
+            type: object
+          status:
+            description: OctopingerStatus defines the observed state of Octopinger
+            properties:
+              conditions:
+                description: Condition keeps ten most recent octopinger conditions.
+                items:
+                  properties:
+                    reason:
+                      type: string
+                    transitionTime:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - reason
+                  - transitionTime
+                  - type
+                  type: object
+                type: array
+              controlPaused:
+                description: ControlPaused indicates the operator pauses the control
+                  of octopinger.
+                type: boolean
+              currentVersion:
+                description: CurrentVersion is the current octopinger version.
+                type: string
+              phase:
+                description: Phase is the octopinger running phase.
+                type: string
+              reason:
+                type: string
+              size:
+                description: Size is the number of nodes the daemon is deployed to.
+                type: integer
+            required:
+            - conditions
+            - controlPaused
+            - currentVersion
+            - phase
+            - reason
+            - size
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: octopinger-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: octopinger-controller
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name:  octopinger-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: octopinger-controller
+subjects:
+- kind: ServiceAccount
+  name: octopinger-controller
+  namespace: octopinger
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: octopinger-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: octopinger-controller
+  serviceName: octopinger-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: octopinger-controller
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: octopinger-controller
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/part-of: octopinger
+              topologyKey: kubernetes.io/hostname
+            weight: 5
+      containers:
+      - command:
+        - /main
+        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.4
+        name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: octopinger-controller
+      
