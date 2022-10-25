@@ -82,9 +82,9 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 						err := icmp.Do(ctx, n, cfg.ICMP.Timeout)
 						if err != nil {
 							s.logger.Sugar().Error("could not ping: %w", err)
+						} else {
+							s.logger.Sugar().Infof("successfully pinged: %s", n)
 						}
-
-						s.logger.Sugar().Infof("successfully pinged: %s", n)
 					}
 				}
 
