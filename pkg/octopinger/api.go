@@ -5,6 +5,7 @@ import (
 
 	srv "github.com/katallaxie/pkg/server"
 
+	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -12,12 +13,27 @@ import (
 )
 
 type api struct {
+	addr string
 	srv.Listener
 }
 
+// APIOpt ...
+type APIOpt func(*api)
+
+// WithAddr ...
+func WithAddr(addr string) APIOpt {
+	return func(a *api) {
+		a.addr = addr
+	}
+}
+
 // NewAPI ...
-func NewAPI() *api {
+func NewAPI(opts ...APIOpt) *api {
 	a := new(api)
+
+	for _, opt := range opts {
+		opt(a)
+	}
 
 	return a
 }
@@ -30,6 +46,8 @@ func (a *api) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) f
 		app.Use(recover.New())
 		app.Use(requestid.New())
 		app.Use(logger.New())
+
+		app.Get("/metrics", adaptor.HTTPHandler(DefaultRegistry.Handler()))
 
 		app.Get("/", func(c *fiber.Ctx) error {
 			return c.SendString("Hello, World 🐙!")
@@ -44,7 +62,7 @@ func (a *api) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) f
 			_ = app.Shutdown()
 		}()
 
-		err := app.Listen(":3000")
+		err := app.Listen(a.addr)
 		if err != nil {
 			return err
 		}

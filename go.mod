@@ -3,6 +3,7 @@ module github.com/ionos-cloud/octopinger
 go 1.19
 
 require (
+	github.com/ansrivas/fiberprometheus/v2 v2.4.1
 	github.com/go-logr/logr v1.2.3
 	github.com/go-ping/ping v1.1.0
 	github.com/gofiber/fiber/v2 v2.38.1
@@ -64,6 +65,7 @@ require (
 	github.com/go-toolsmith/typep v1.0.0 // indirect
 	github.com/gobuffalo/flect v0.2.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gofiber/adaptor/v2 v2.1.25 // indirect
 	github.com/gofrs/flock v0.0.0-20190320160742-5135e617513b // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

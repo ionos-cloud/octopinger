@@ -13,6 +13,7 @@ import (
 type flags struct {
 	Debug      bool
 	ConfigPath string
+	StatusAddr string
 }
 
 var f = &flags{}
@@ -27,6 +28,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.Flags().BoolVar(&f.Debug, "debug", f.Debug, "debug")
 	rootCmd.Flags().StringVar(&f.ConfigPath, "config", "/etc/config", "config")
+	rootCmd.Flags().StringVar(&f.StatusAddr, "status-addr", "0.0.0.0:8081", "status")
 }
 
 func main() {
@@ -48,12 +50,25 @@ func run(ctx context.Context) error {
 
 	srv, _ := server.WithContext(ctx)
 
-	api := octopinger.NewAPI()
+	err = octopinger.DefaultRegisterer.Register(octopinger.DefaultMetrics)
+	if err != nil {
+		return err
+	}
+
+	m, err := octopinger.NewMonitor(octopinger.DefaultMetrics)
+	if err != nil {
+		return err
+	}
+
+	api := octopinger.NewAPI(
+		octopinger.WithAddr(f.StatusAddr),
+	)
 	srv.Listen(api, false)
 
 	o := octopinger.NewServer(
 		octopinger.WithLogger(logger),
 		octopinger.WithConfigPath(f.ConfigPath),
+		octopinger.WithMonitor(m),
 	)
 	srv.Listen(o, false)
 

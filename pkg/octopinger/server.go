@@ -11,7 +11,8 @@ import (
 type server struct {
 	configPath string
 
-	logger *zap.Logger
+	monitor *Monitor
+	logger  *zap.Logger
 	srv.Listener
 }
 
@@ -29,6 +30,13 @@ func WithLogger(logger *zap.Logger) Opt {
 func WithConfigPath(path string) Opt {
 	return func(s *server) {
 		s.configPath = path
+	}
+}
+
+// WithMonitor ...
+func WithMonitor(m *Monitor) Opt {
+	return func(s *server) {
+		s.monitor = m
 	}
 }
 
