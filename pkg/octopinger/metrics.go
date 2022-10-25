@@ -130,12 +130,12 @@ func NewMonitor(metrics *Metrics) (*Monitor, error) {
 		return nil, err
 	}
 
-	m.metrics.errorsCounter.GetMetricWith(prometheus.Labels{"instance": "", "type": ""})
+	_, err = m.metrics.errorsCounter.GetMetricWith(prometheus.Labels{"instance": "", "type": ""})
 	if err != nil {
 		return nil, err
 	}
 
-	m.metrics.clusterHealthGauge.GetMetricWith(prometheus.Labels{"instance": ""})
+	_, err = m.metrics.clusterHealthGauge.GetMetricWith(prometheus.Labels{"instance": ""})
 	if err != nil {
 		return nil, err
 	}
