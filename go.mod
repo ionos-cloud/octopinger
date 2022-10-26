@@ -11,6 +11,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.21.0
 	github.com/katallaxie/pkg v0.0.0-20220817193938-0faa2d804a6b
+	github.com/montanaflynn/stats v0.6.6
 	github.com/prometheus/client_golang v1.12.2
 	github.com/spf13/cobra v1.6.0
 	go.uber.org/zap v1.21.0

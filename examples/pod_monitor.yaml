@@ -1,0 +1,11 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: octopinger
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    port: status
+  selector:
+    matchLabels:
+      

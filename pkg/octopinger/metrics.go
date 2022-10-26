@@ -44,6 +44,10 @@ var (
 
 type Metrics struct {
 	probeHealthGauge   *prometheus.GaugeVec
+	probeRttMax        *prometheus.GaugeVec
+	probeRttMin        *prometheus.GaugeVec
+	probeRttMean       *prometheus.GaugeVec
+	probeRttStddev     *prometheus.GaugeVec
 	nodesHealthGauge   *prometheus.GaugeVec
 	errorsCounter      *prometheus.CounterVec
 	icmpErrorsCounter  *prometheus.CounterVec
@@ -61,6 +65,50 @@ func NewMetrics() *Metrics {
 		},
 		[]string{
 			"instance",
+		},
+	)
+
+	m.probeRttMin = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_rtt_min",
+			Help: "Min round-trip time of the probe in this instance",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probeRttMean = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_rtt_mean",
+			Help: "Mean round-trip time of the probe in this instance",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probeRttMax = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_rtt_max",
+			Help: "Max round-trip time of the probe in this instance",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probeRttStddev = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_rtt_stddev",
+			Help: "Standard deviation in round-trip time of the probe in this instance",
+		},
+		[]string{
+			"instance",
+			"probe",
 		},
 	)
 
@@ -114,6 +162,10 @@ func NewMetrics() *Metrics {
 // Collect ...
 func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.nodesHealthGauge.Collect(ch)
+	m.probeRttMax.Collect(ch)
+	m.probeRttMin.Collect(ch)
+	m.probeRttStddev.Collect(ch)
+	m.probeRttMean.Collect(ch)
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
 	m.clusterHealthGauge.Collect(ch)
@@ -123,6 +175,10 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 // Describe ...
 func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.nodesHealthGauge.Describe(ch)
+	m.probeRttMax.Describe(ch)
+	m.probeRttMin.Describe(ch)
+	m.probeRttStddev.Describe(ch)
+	m.probeRttMean.Describe(ch)
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
 	m.clusterHealthGauge.Describe(ch)
@@ -184,4 +240,24 @@ func (m *Monitor) SetProbeHealth(instance, probe string, healthy bool) {
 		value = 0
 	}
 	m.metrics.probeHealthGauge.WithLabelValues(instance, probe).Set(value)
+}
+
+// SetProbeRttMax ...
+func (m *Monitor) SetProbeRttMax(instance, probe string, rtt float64) {
+	m.metrics.probeRttMax.WithLabelValues(instance, probe).Set(rtt)
+}
+
+// SetProbeRttMin ...
+func (m *Monitor) SetProbeRttMin(instance, probe string, rtt float64) {
+	m.metrics.probeRttMin.WithLabelValues(instance, probe).Set(rtt)
+}
+
+// SetProbeRttStddev ...
+func (m *Monitor) SetProbeRttStddev(instance, probe string, rtt float64) {
+	m.metrics.probeRttStddev.WithLabelValues(instance, probe).Set(rtt)
+}
+
+// SetProbeRttMean ...
+func (m *Monitor) SetProbeRttMean(instance, probe string, rtt float64) {
+	m.metrics.probeRttStddev.WithLabelValues(instance, probe).Set(rtt)
 }

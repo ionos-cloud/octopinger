@@ -30,6 +30,19 @@ Now, you are ready to install octopinger to your cluster.
 kubectl apply -n octopinger examples/octopinger_simple.yaml
 ```
 
+## Metrics
+
+<!-- * `octopinger_probe_health_total`
+* `octopinger_probe_latency_max`
+ `octopinger_probe_latency_avg`
+  `octopinger_probe_latency_min`
+
+ `octopinger_probe_stdv`
+
+* 30 sec / 1 min
+* define intervals for latency expecations... -->
+
+
 ## License
 
 [Apache 2.0](/LICENSE)

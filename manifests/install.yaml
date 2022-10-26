@@ -198,7 +198,7 @@ spec:
       - command:
         - /main
         image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.22
-        name: manager
+        name: operator
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
