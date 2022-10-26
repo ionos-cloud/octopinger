@@ -103,6 +103,8 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			p := NewProber(
 				WithMonitor(s.opts.monitor),
 				WithConfigPath(s.opts.configPath),
+				WithNodeName(s.opts.nodeName),
+				WithLogger(s.opts.logger),
 			)
 			run(p.Do(ctx, probe))
 		}

@@ -43,6 +43,7 @@ var (
 )
 
 type Metrics struct {
+	probeHealthGauge   *prometheus.GaugeVec
 	nodesHealthGauge   *prometheus.GaugeVec
 	errorsCounter      *prometheus.CounterVec
 	icmpErrorsCounter  *prometheus.CounterVec
@@ -60,6 +61,17 @@ func NewMetrics() *Metrics {
 		},
 		[]string{
 			"instance",
+		},
+	)
+
+	m.probeHealthGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_health_total",
+			Help: "Health based on individual probes",
+		},
+		[]string{
+			"instance",
+			"probe",
 		},
 	)
 
@@ -105,6 +117,7 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
 	m.clusterHealthGauge.Collect(ch)
+	m.probeHealthGauge.Collect(ch)
 }
 
 // Describe ...
@@ -113,6 +126,7 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
 	m.clusterHealthGauge.Describe(ch)
+	m.probeHealthGauge.Describe(ch)
 }
 
 // Monitor ...
@@ -161,4 +175,13 @@ func (m *Monitor) CountError(instance, errorType string) {
 // CountICMPErrors ...
 func (m *Monitor) CountICMPErrors(instance, errorType string) {
 	m.metrics.icmpErrorsCounter.WithLabelValues(instance, errorType).Inc()
+}
+
+// SetProbeHealth ...
+func (m *Monitor) SetProbeHealth(instance, probe string, healthy bool) {
+	value := 1.0
+	if !healthy {
+		value = 0
+	}
+	m.metrics.probeHealthGauge.WithLabelValues(instance, probe).Set(value)
 }

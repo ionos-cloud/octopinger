@@ -25,6 +25,7 @@ func NewProber(opt ...Opt) *prober {
 
 // Prober ...
 type Prober interface {
+	// Do ...
 	Do(ctx context.Context, probe Probe) error
 }
 
@@ -48,9 +49,11 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 				g, gctx := errgroup.WithContext(ctx)
 				g.SetLimit(10)
 
+				healthy := true
 				for _, n := range nodeList.Nodes() {
+					node := n
 					g.Go(func() error {
-						err := probe.Do(gctx, n)
+						err := probe.Do(gctx, node)
 						if err != nil {
 							return err
 						}
@@ -61,8 +64,10 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 
 				err = g.Wait()
 				if err != nil {
-					return err
+					healthy = false
 				}
+
+				p.opts.monitor.SetProbeHealth(p.opts.nodeName, probe.Name(), healthy)
 
 				continue
 			}
@@ -74,10 +79,14 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 type Probe interface {
 	// Do ...
 	Do(ctx context.Context, addr string) error
+
+	// Name ...
+	Name() string
 }
 
 type icmpProbe struct {
 	opts *Opts
+	name string
 }
 
 // NewICMPProbe ...
@@ -88,7 +97,14 @@ func NewICMPProbe(opts ...Opt) *icmpProbe {
 	p := new(icmpProbe)
 	p.opts = options
 
+	p.name = "icmp"
+
 	return p
+}
+
+// Name ...
+func (p *icmpProbe) Name() string {
+	return p.name
 }
 
 // Do ...
