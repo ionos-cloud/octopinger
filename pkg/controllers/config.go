@@ -48,6 +48,8 @@ func OcotopingerManaged() predicate.Predicate {
 
 // Reconcile ...
 func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (reconcile.Result, error) {
+	log := ctrl.LoggerFrom(ctx)
+
 	ds := &appsv1.DaemonSet{}
 	err := s.Get(ctx, r.NamespacedName, ds)
 	if err != nil {
@@ -60,6 +62,8 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		return reconcile.Result{}, err
 	}
 
+	log.Info("fetching list of pods")
+
 	pods := &corev1.PodList{}
 	err = s.List(ctx, pods, client.InNamespace(r.Namespace), client.MatchingLabels(ds.Spec.Template.Labels))
 	if err != nil {
@@ -71,6 +75,8 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		ips = append(ips, p.Status.PodIP)
 	}
 	cfg.Data["nodes"] = strings.Join(ips, "\n")
+
+	log.Info("updating list of pods")
 
 	err = s.Update(ctx, cfg)
 	if err != nil {
