@@ -72,6 +72,10 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 
 	ips := []string{}
 	for _, p := range pods.Items {
+		if p.Status.Phase != corev1.PodRunning {
+			continue
+		}
+
 		ips = append(ips, p.Status.PodIP)
 	}
 	cfg.Data["nodes"] = strings.Join(ips, "\n")
