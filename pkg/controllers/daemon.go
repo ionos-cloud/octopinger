@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -117,6 +118,21 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 								{
 									Name:      "config-vol",
 									MountPath: "/etc/config",
+								},
+							},
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "status",
+									ContainerPort: 8081,
+									Protocol:      corev1.ProtocolTCP,
+								},
+							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: "/health",
+										Port: intstr.FromString("status"),
+									},
 								},
 							},
 							Env: []corev1.EnvVar{

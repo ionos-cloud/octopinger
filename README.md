@@ -10,6 +10,26 @@ Octopinger is an Kubernetes Operator to monitor the connectivity of your cluster
 
 The operator is creating a `DeamonSet` to schedula an `octopinger` instance on all Kubernetes nodes. The `octopinger` instances get created with a `ConfigMap` that contains the current running nodes and configuration options. The `ConfigMap` is updated as instances are in the `running` phase and have an IP address assigned.
 
+## Install
+
+Create a namespace for Octopinger.
+
+```bash
+kubectl create namespace octopinger
+```
+
+Next, install the custom resource defintions, service accounts, roles and operator.
+
+```bash
+kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.0.20/manifests/install.yaml
+```
+
+Now, you are ready to install octopinger to your cluster.
+
+```bash
+kubectl apply -n octopinger examples/octopinger_simple.yaml
+```
+
 ## License
 
 [Apache 2.0](/LICENSE)

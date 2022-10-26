@@ -15,6 +15,7 @@ require (
 	github.com/spf13/cobra v1.6.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/exp v0.0.0-20221023144134-a1e5550cf13e
+	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
@@ -153,7 +154,6 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
