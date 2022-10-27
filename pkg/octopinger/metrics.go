@@ -43,15 +43,18 @@ var (
 )
 
 type Metrics struct {
-	probeHealthGauge   *prometheus.GaugeVec
-	probeRttMax        *prometheus.GaugeVec
-	probeRttMin        *prometheus.GaugeVec
-	probeRttMean       *prometheus.GaugeVec
-	probeRttStddev     *prometheus.GaugeVec
-	nodesHealthGauge   *prometheus.GaugeVec
-	errorsCounter      *prometheus.CounterVec
-	icmpErrorsCounter  *prometheus.CounterVec
-	clusterHealthGauge *prometheus.GaugeVec
+	probeHealthGauge    *prometheus.GaugeVec
+	probeRttMax         *prometheus.GaugeVec
+	probeRttMin         *prometheus.GaugeVec
+	probeRttMean        *prometheus.GaugeVec
+	probeRttStddev      *prometheus.GaugeVec
+	probePacketLossMin  *prometheus.GaugeVec
+	probePacketLossMax  *prometheus.GaugeVec
+	probePacketLossMean *prometheus.GaugeVec
+	nodesHealthGauge    *prometheus.GaugeVec
+	errorsCounter       *prometheus.CounterVec
+	icmpErrorsCounter   *prometheus.CounterVec
+	clusterHealthGauge  *prometheus.GaugeVec
 }
 
 // NewMetrics ...
@@ -105,6 +108,39 @@ func NewMetrics() *Metrics {
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_rtt_stddev",
 			Help: "Standard deviation in round-trip time of the probe in this instance",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probePacketLossMin = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_loss_min",
+			Help: "Min percentage of lost packets",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probePacketLossMax = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_loss_max",
+			Help: "Max percentage of lost packets",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probePacketLossMean = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_loss_mean",
+			Help: "Mean percentage of lost packets",
 		},
 		[]string{
 			"instance",
@@ -166,6 +202,9 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probeRttMin.Collect(ch)
 	m.probeRttStddev.Collect(ch)
 	m.probeRttMean.Collect(ch)
+	m.probePacketLossMax.Collect(ch)
+	m.probePacketLossMin.Collect(ch)
+	m.probePacketLossMean.Collect(ch)
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
 	m.clusterHealthGauge.Collect(ch)
@@ -178,6 +217,9 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probeRttMax.Describe(ch)
 	m.probeRttMin.Describe(ch)
 	m.probeRttStddev.Describe(ch)
+	m.probePacketLossMax.Describe(ch)
+	m.probePacketLossMin.Describe(ch)
+	m.probePacketLossMean.Describe(ch)
 	m.probeRttMean.Describe(ch)
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
@@ -194,21 +236,6 @@ type Monitor struct {
 func NewMonitor(metrics *Metrics) (*Monitor, error) {
 	m := new(Monitor)
 	m.metrics = metrics
-
-	_, err := m.metrics.nodesHealthGauge.GetMetricWith(prometheus.Labels{"instance": "", "status": ""})
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = m.metrics.errorsCounter.GetMetricWith(prometheus.Labels{"instance": "", "type": ""})
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = m.metrics.clusterHealthGauge.GetMetricWith(prometheus.Labels{"instance": ""})
-	if err != nil {
-		return nil, err
-	}
 
 	return m, nil
 }
@@ -260,4 +287,19 @@ func (m *Monitor) SetProbeRttStddev(instance, probe string, rtt float64) {
 // SetProbeRttMean ...
 func (m *Monitor) SetProbeRttMean(instance, probe string, rtt float64) {
 	m.metrics.probeRttStddev.WithLabelValues(instance, probe).Set(rtt)
+}
+
+// SetProbePacketLossMin ...
+func (m *Monitor) SetProbePacketlossMin(instance, probe string, percentage float64) {
+	m.metrics.probePacketLossMin.WithLabelValues(instance, probe).Set(percentage)
+}
+
+// SetProbePacketLossMax ...
+func (m *Monitor) SetProbePacketLossMax(instance, probe string, percentage float64) {
+	m.metrics.probePacketLossMax.WithLabelValues(instance, probe).Set(percentage)
+}
+
+// SetProbePacketLossMean ...
+func (m *Monitor) SetProbePacketLossMean(instance, probe string, percentage float64) {
+	m.metrics.probePacketLossMax.WithLabelValues(instance, probe).Set(percentage)
 }

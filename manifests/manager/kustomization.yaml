@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: ghcr.io/ionos-cloud/octopinger/operator
-  newTag: v0.0.3
+  newTag: v0.0.23

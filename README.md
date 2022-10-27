@@ -21,7 +21,7 @@ kubectl create namespace octopinger
 Next, install the custom resource defintions, service accounts, roles and operator.
 
 ```bash
-kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.0.22/manifests/install.yaml
+kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.0.23/manifests/install.yaml
 ```
 
 Now, you are ready to install octopinger to your cluster.
@@ -31,16 +31,6 @@ kubectl apply -n octopinger examples/octopinger_simple.yaml
 ```
 
 ## Metrics
-
-<!-- * `octopinger_probe_health_total`
-* `octopinger_probe_latency_max`
- `octopinger_probe_latency_avg`
-  `octopinger_probe_latency_min`
-
- `octopinger_probe_stdv`
-
-* 30 sec / 1 min
-* define intervals for latency expecations... -->
 
 
 ## License

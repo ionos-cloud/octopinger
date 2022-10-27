@@ -65,6 +65,7 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 						samples.AddMeanRtt(stats.AvgRtt)
 						samples.AddMaxRtt(stats.MaxRtt)
 						samples.AddMinRtt(stats.MinRtt)
+						samples.AddPacketLoss(stats.PacketLoss)
 
 						return nil
 					})
@@ -80,6 +81,9 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 				p.opts.monitor.SetProbeRttMin(p.opts.nodeName, probe.Name(), samples.MinRtt())
 				p.opts.monitor.SetProbeRttMean(p.opts.nodeName, probe.Name(), samples.MeanRtt())
 				p.opts.monitor.SetProbeRttStddev(p.opts.nodeName, probe.Name(), samples.StdDevRtt())
+				p.opts.monitor.SetProbePacketLossMax(p.opts.nodeName, probe.Name(), samples.PacketLossMax())
+				p.opts.monitor.SetProbePacketLossMean(p.opts.nodeName, probe.Name(), samples.PacketLossMean())
+				p.opts.monitor.SetProbePacketlossMin(p.opts.nodeName, probe.Name(), samples.PacketLossMin())
 
 				continue
 			}
@@ -103,9 +107,10 @@ type icmpProbe struct {
 
 // Samples ...
 type Samples struct {
-	maxRtt  []float64
-	minRtt  []float64
-	meanRtt []float64
+	maxRtt     []float64
+	minRtt     []float64
+	meanRtt    []float64
+	packetloss []float64
 
 	sync.Mutex
 }
@@ -129,6 +134,13 @@ func (s *Samples) AddMeanRtt(rtt time.Duration) {
 	s.Lock()
 	defer s.Unlock()
 	s.meanRtt = append(s.meanRtt, float64(rtt.Milliseconds()))
+}
+
+// AddPacketLoss ...
+func (s *Samples) AddPacketLoss(percentage float64) {
+	s.Lock()
+	defer s.Unlock()
+	s.meanRtt = append(s.packetloss, percentage)
 }
 
 // MeanRtt ...
@@ -183,6 +195,45 @@ func (s *Samples) StdDevRtt() float64 {
 	return stdDev
 }
 
+// PacketLossMean ...
+func (s *Samples) PacketLossMean() float64 {
+	s.Lock()
+	defer s.Unlock()
+
+	m, err := stats.Mean(s.packetloss)
+	if err != nil {
+		return 0
+	}
+
+	return m
+}
+
+// PacketLossMax ...
+func (s *Samples) PacketLossMax() float64 {
+	s.Lock()
+	defer s.Unlock()
+
+	m, err := stats.Max(s.packetloss)
+	if err != nil {
+		return 0
+	}
+
+	return m
+}
+
+// PacketLossMin ...
+func (s *Samples) PacketLossMin() float64 {
+	s.Lock()
+	defer s.Unlock()
+
+	m, err := stats.Min(s.packetloss)
+	if err != nil {
+		return 0
+	}
+
+	return m
+}
+
 // NewSamples ...
 func NewSamples() *Samples {
 	return &Samples{}
@@ -190,9 +241,10 @@ func NewSamples() *Samples {
 
 // Stats ...
 type Stats struct {
-	MaxRtt time.Duration
-	MinRtt time.Duration
-	AvgRtt time.Duration
+	MaxRtt     time.Duration
+	MinRtt     time.Duration
+	AvgRtt     time.Duration
+	PacketLoss float64
 }
 
 // NewICMPProbe ...
@@ -226,16 +278,17 @@ func (i *icmpProbe) Do(ctx context.Context, addr string) (*Stats, error) {
 		pinger.Stop()
 	}()
 
-	pinger.Count = 3
+	pinger.Count = 5
 	err = pinger.Run()
 	if err != nil {
 		return nil, err
 	}
 
 	stats := &Stats{
-		MaxRtt: pinger.Statistics().MaxRtt,
-		MinRtt: pinger.Statistics().MinRtt,
-		AvgRtt: pinger.Statistics().AvgRtt,
+		MaxRtt:     pinger.Statistics().MaxRtt,
+		MinRtt:     pinger.Statistics().MinRtt,
+		AvgRtt:     pinger.Statistics().AvgRtt,
+		PacketLoss: pinger.Statistics().PacketLoss,
 	}
 
 	return stats, nil
