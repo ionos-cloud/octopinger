@@ -53,8 +53,9 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 
 				samples := NewSamples()
 
-				healthy := true
-				for _, n := range nodeList.Nodes() {
+				nodes := nodeList.Nodes()
+				health := true
+				for _, n := range nodes {
 					node := n
 					g.Go(func() error {
 						stats, err := probe.Do(gctx, node)
@@ -73,10 +74,10 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 
 				err = g.Wait()
 				if err != nil {
-					healthy = false
+					health = false
 				}
 
-				p.opts.monitor.SetProbeHealth(p.opts.nodeName, probe.Name(), healthy)
+				p.opts.monitor.SetProbeHealth(p.opts.nodeName, probe.Name(), health)
 				p.opts.monitor.SetProbeRttMax(p.opts.nodeName, probe.Name(), samples.MaxRtt())
 				p.opts.monitor.SetProbeRttMin(p.opts.nodeName, probe.Name(), samples.MinRtt())
 				p.opts.monitor.SetProbeRttMean(p.opts.nodeName, probe.Name(), samples.MeanRtt())
@@ -84,6 +85,7 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 				p.opts.monitor.SetProbePacketLossMax(p.opts.nodeName, probe.Name(), samples.PacketLossMax())
 				p.opts.monitor.SetProbePacketLossMean(p.opts.nodeName, probe.Name(), samples.PacketLossMean())
 				p.opts.monitor.SetProbePacketlossMin(p.opts.nodeName, probe.Name(), samples.PacketLossMin())
+				p.opts.monitor.SetProbeNodesTotal(p.opts.nodeName, probe.Name(), float64(len(nodeList.Nodes())))
 
 				continue
 			}
@@ -119,21 +121,21 @@ type Samples struct {
 func (s *Samples) AddMaxRtt(rtt time.Duration) {
 	s.Lock()
 	defer s.Unlock()
-	s.maxRtt = append(s.maxRtt, float64(rtt.Milliseconds()))
+	s.maxRtt = append(s.maxRtt, float64(rtt.Microseconds()))
 }
 
 // AddMinxRtt ...
 func (s *Samples) AddMinRtt(rtt time.Duration) {
 	s.Lock()
 	defer s.Unlock()
-	s.minRtt = append(s.minRtt, float64(rtt.Milliseconds()))
+	s.minRtt = append(s.minRtt, float64(rtt.Microseconds()))
 }
 
 // AddMeanRtt ...
 func (s *Samples) AddMeanRtt(rtt time.Duration) {
 	s.Lock()
 	defer s.Unlock()
-	s.meanRtt = append(s.meanRtt, float64(rtt.Milliseconds()))
+	s.meanRtt = append(s.meanRtt, float64(rtt.Microseconds()))
 }
 
 // AddPacketLoss ...

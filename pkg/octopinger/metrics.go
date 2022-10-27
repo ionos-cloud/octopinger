@@ -51,6 +51,8 @@ type Metrics struct {
 	probePacketLossMin  *prometheus.GaugeVec
 	probePacketLossMax  *prometheus.GaugeVec
 	probePacketLossMean *prometheus.GaugeVec
+	probeNodesTotal     *prometheus.GaugeVec
+	probeNodesError     *prometheus.GaugeVec
 	nodesHealthGauge    *prometheus.GaugeVec
 	errorsCounter       *prometheus.CounterVec
 	icmpErrorsCounter   *prometheus.CounterVec
@@ -68,6 +70,28 @@ func NewMetrics() *Metrics {
 		},
 		[]string{
 			"instance",
+		},
+	)
+
+	m.probeNodesTotal = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_nodes_total",
+			Help: "Total number of probed nodes",
+		},
+		[]string{
+			"instance",
+			"probe",
+		},
+	)
+
+	m.probeNodesError = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_nodes_errors",
+			Help: "Number of nodes with errors",
+		},
+		[]string{
+			"instance",
+			"probe",
 		},
 	)
 
@@ -205,6 +229,8 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probePacketLossMax.Collect(ch)
 	m.probePacketLossMin.Collect(ch)
 	m.probePacketLossMean.Collect(ch)
+	m.probeNodesTotal.Collect(ch)
+	m.probeNodesError.Collect(ch)
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
 	m.clusterHealthGauge.Collect(ch)
@@ -221,6 +247,8 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probePacketLossMin.Describe(ch)
 	m.probePacketLossMean.Describe(ch)
 	m.probeRttMean.Describe(ch)
+	m.probeNodesTotal.Describe(ch)
+	m.probeNodesError.Describe(ch)
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
 	m.clusterHealthGauge.Describe(ch)
@@ -267,6 +295,16 @@ func (m *Monitor) SetProbeHealth(instance, probe string, healthy bool) {
 		value = 0
 	}
 	m.metrics.probeHealthGauge.WithLabelValues(instance, probe).Set(value)
+}
+
+// SetProbeNodesTotal ...
+func (m *Monitor) SetProbeNodesTotal(instance, probe string, num float64) {
+	m.metrics.probeNodesTotal.WithLabelValues(instance, probe).Set(num)
+}
+
+// SetProbeNodesError ...
+func (m *Monitor) SetProbeNodesError(instance, probe string, num float64) {
+	m.metrics.probeNodesError.WithLabelValues(instance, probe).Set(num)
 }
 
 // SetProbeRttMax ...
