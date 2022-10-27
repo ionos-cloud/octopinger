@@ -1,4 +1,4 @@
-VERSION ?= 0.0.24
+VERSION ?= 0.0.25
 
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
