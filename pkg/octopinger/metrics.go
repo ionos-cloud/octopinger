@@ -69,7 +69,7 @@ func NewMetrics() *Metrics {
 			Help: "1 if all check pass, 0 otherwise",
 		},
 		[]string{
-			"instance",
+			"octopinger_node",
 		},
 	)
 
@@ -79,8 +79,8 @@ func NewMetrics() *Metrics {
 			Help: "Total number of probed nodes",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -90,8 +90,8 @@ func NewMetrics() *Metrics {
 			Help: "Number of nodes with errors",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -101,8 +101,8 @@ func NewMetrics() *Metrics {
 			Help: "Min round-trip time of the probe in this instance",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -112,8 +112,8 @@ func NewMetrics() *Metrics {
 			Help: "Mean round-trip time of the probe in this instance",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -123,8 +123,8 @@ func NewMetrics() *Metrics {
 			Help: "Max round-trip time of the probe in this instance",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -134,8 +134,8 @@ func NewMetrics() *Metrics {
 			Help: "Standard deviation in round-trip time of the probe in this instance",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -145,8 +145,8 @@ func NewMetrics() *Metrics {
 			Help: "Min percentage of lost packets",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -156,8 +156,8 @@ func NewMetrics() *Metrics {
 			Help: "Max percentage of lost packets",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -167,8 +167,8 @@ func NewMetrics() *Metrics {
 			Help: "Mean percentage of lost packets",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -178,8 +178,8 @@ func NewMetrics() *Metrics {
 			Help: "Health based on individual probes",
 		},
 		[]string{
-			"instance",
-			"probe",
+			"octopinger_node",
+			"octopinger_probe",
 		},
 	)
 
@@ -189,8 +189,8 @@ func NewMetrics() *Metrics {
 			Help: "Number of nodes seen as healthy/unhealthy from this instance",
 		},
 		[]string{
-			"instance",
-			"status",
+			"octopinger_node",
+			"octopinger_status",
 		},
 	)
 
@@ -200,8 +200,8 @@ func NewMetrics() *Metrics {
 			Help: "The total number of errors per instance",
 		},
 		[]string{
-			"instance",
-			"type",
+			"octopinger_node",
+			"octopinger_type",
 		},
 	)
 
@@ -211,8 +211,8 @@ func NewMetrics() *Metrics {
 			Help: "The total number of ICMP probe errors per instance",
 		},
 		[]string{
-			"instance",
-			"type",
+			"octopinger_node",
+			"octopinger_type",
 		},
 	)
 
@@ -324,7 +324,7 @@ func (m *Monitor) SetProbeRttStddev(instance, probe string, rtt float64) {
 
 // SetProbeRttMean ...
 func (m *Monitor) SetProbeRttMean(instance, probe string, rtt float64) {
-	m.metrics.probeRttStddev.WithLabelValues(instance, probe).Set(rtt)
+	m.metrics.probeRttMean.WithLabelValues(instance, probe).Set(rtt)
 }
 
 // SetProbePacketLossMin ...
