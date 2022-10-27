@@ -2,7 +2,6 @@ package octopinger
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/go-ping/ping"
@@ -52,6 +51,9 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 				g.SetLimit(10)
 
 				samples := NewSamples()
+				gather := make(chan *Stats)
+
+				samples.Gather(ctx, gather)
 
 				nodes := nodeList.Nodes()
 				health := true
@@ -63,10 +65,7 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 							return err
 						}
 
-						samples.AddMeanRtt(stats.AvgRtt)
-						samples.AddMaxRtt(stats.MaxRtt)
-						samples.AddMinRtt(stats.MinRtt)
-						samples.AddPacketLoss(stats.PacketLoss)
+						gather <- stats
 
 						return nil
 					})
@@ -86,6 +85,7 @@ func (p *prober) Do(ctx context.Context, probe Probe) func() error {
 				p.opts.monitor.SetProbePacketLossMean(p.opts.nodeName, probe.Name(), samples.PacketLossMean())
 				p.opts.monitor.SetProbePacketlossMin(p.opts.nodeName, probe.Name(), samples.PacketLossMin())
 				p.opts.monitor.SetProbeNodesTotal(p.opts.nodeName, probe.Name(), float64(len(nodeList.Nodes())))
+				p.opts.monitor.SetProbeNodesReports(p.opts.nodeName, probe.Name(), samples.Reports())
 
 				continue
 			}
@@ -113,43 +113,27 @@ type Samples struct {
 	minRtt     []float64
 	meanRtt    []float64
 	packetloss []float64
-
-	sync.Mutex
+	num        int
 }
 
-// AddMaxRtt ...
-func (s *Samples) AddMaxRtt(rtt time.Duration) {
-	s.Lock()
-	defer s.Unlock()
+func (s *Samples) addMaxRtt(rtt time.Duration) {
 	s.maxRtt = append(s.maxRtt, float64(rtt.Microseconds()))
 }
 
-// AddMinxRtt ...
-func (s *Samples) AddMinRtt(rtt time.Duration) {
-	s.Lock()
-	defer s.Unlock()
+func (s *Samples) addMinRtt(rtt time.Duration) {
 	s.minRtt = append(s.minRtt, float64(rtt.Microseconds()))
 }
 
-// AddMeanRtt ...
-func (s *Samples) AddMeanRtt(rtt time.Duration) {
-	s.Lock()
-	defer s.Unlock()
+func (s *Samples) addMeanRtt(rtt time.Duration) {
 	s.meanRtt = append(s.meanRtt, float64(rtt.Microseconds()))
 }
 
-// AddPacketLoss ...
-func (s *Samples) AddPacketLoss(percentage float64) {
-	s.Lock()
-	defer s.Unlock()
+func (s *Samples) addPacketLoss(percentage float64) {
 	s.meanRtt = append(s.packetloss, percentage)
 }
 
 // MeanRtt ...
 func (s *Samples) MeanRtt() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	m, err := stats.Mean(s.meanRtt)
 	if err != nil {
 		return 0
@@ -160,9 +144,6 @@ func (s *Samples) MeanRtt() float64 {
 
 // MaxRtt ...
 func (s *Samples) MaxRtt() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	max, err := stats.Max(s.maxRtt)
 	if err != nil {
 		return 0
@@ -173,9 +154,6 @@ func (s *Samples) MaxRtt() float64 {
 
 // MinRtt ...
 func (s *Samples) MinRtt() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	min, err := stats.Min(s.minRtt)
 	if err != nil {
 		return 0
@@ -186,9 +164,6 @@ func (s *Samples) MinRtt() float64 {
 
 // StdDevRtt ...
 func (s *Samples) StdDevRtt() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	stdDev, err := stats.StdDevS(s.meanRtt)
 	if err != nil {
 		return 0
@@ -199,9 +174,6 @@ func (s *Samples) StdDevRtt() float64 {
 
 // PacketLossMean ...
 func (s *Samples) PacketLossMean() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	m, err := stats.Mean(s.packetloss)
 	if err != nil {
 		return 0
@@ -212,9 +184,6 @@ func (s *Samples) PacketLossMean() float64 {
 
 // PacketLossMax ...
 func (s *Samples) PacketLossMax() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	m, err := stats.Max(s.packetloss)
 	if err != nil {
 		return 0
@@ -225,9 +194,6 @@ func (s *Samples) PacketLossMax() float64 {
 
 // PacketLossMin ...
 func (s *Samples) PacketLossMin() float64 {
-	s.Lock()
-	defer s.Unlock()
-
 	m, err := stats.Min(s.packetloss)
 	if err != nil {
 		return 0
@@ -236,9 +202,31 @@ func (s *Samples) PacketLossMin() float64 {
 	return m
 }
 
+// Reports ...
+func (s *Samples) Reports() float64 {
+	return float64(s.num)
+}
+
 // NewSamples ...
 func NewSamples() *Samples {
 	return &Samples{}
+}
+
+// Gather ...
+func (s *Samples) Gather(ctx context.Context, ch <-chan *Stats) {
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+			case stat := <-ch:
+				s.addMaxRtt(stat.MaxRtt)
+				s.addMinRtt(stat.MinRtt)
+				s.addMeanRtt(stat.AvgRtt)
+				s.addPacketLoss(stat.PacketLoss)
+				s.num += 1
+			}
+		}
+	}(ctx)
 }
 
 // Stats ...

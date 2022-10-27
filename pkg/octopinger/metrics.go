@@ -52,7 +52,7 @@ type Metrics struct {
 	probePacketLossMax  *prometheus.GaugeVec
 	probePacketLossMean *prometheus.GaugeVec
 	probeNodesTotal     *prometheus.GaugeVec
-	probeNodesError     *prometheus.GaugeVec
+	probeNodesReports   *prometheus.GaugeVec
 	nodesHealthGauge    *prometheus.GaugeVec
 	errorsCounter       *prometheus.CounterVec
 	icmpErrorsCounter   *prometheus.CounterVec
@@ -84,10 +84,10 @@ func NewMetrics() *Metrics {
 		},
 	)
 
-	m.probeNodesError = prometheus.NewGaugeVec(
+	m.probeNodesReports = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "octopinger_probe_nodes_errors",
-			Help: "Number of nodes with errors",
+			Name: "octopinger_probe_nodes_reports",
+			Help: "Number of nodes that reported results",
 		},
 		[]string{
 			"octopinger_node",
@@ -230,7 +230,7 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probePacketLossMin.Collect(ch)
 	m.probePacketLossMean.Collect(ch)
 	m.probeNodesTotal.Collect(ch)
-	m.probeNodesError.Collect(ch)
+	m.probeNodesReports.Collect(ch)
 	m.errorsCounter.Collect(ch)
 	m.icmpErrorsCounter.Collect(ch)
 	m.clusterHealthGauge.Collect(ch)
@@ -248,7 +248,7 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probePacketLossMean.Describe(ch)
 	m.probeRttMean.Describe(ch)
 	m.probeNodesTotal.Describe(ch)
-	m.probeNodesError.Describe(ch)
+	m.probeNodesReports.Describe(ch)
 	m.errorsCounter.Describe(ch)
 	m.icmpErrorsCounter.Describe(ch)
 	m.clusterHealthGauge.Describe(ch)
@@ -302,9 +302,9 @@ func (m *Monitor) SetProbeNodesTotal(instance, probe string, num float64) {
 	m.metrics.probeNodesTotal.WithLabelValues(instance, probe).Set(num)
 }
 
-// SetProbeNodesError ...
-func (m *Monitor) SetProbeNodesError(instance, probe string, num float64) {
-	m.metrics.probeNodesError.WithLabelValues(instance, probe).Set(num)
+// SetProbeNodesReports ...
+func (m *Monitor) SetProbeNodesReports(instance, probe string, num float64) {
+	m.metrics.probeNodesReports.WithLabelValues(instance, probe).Set(num)
 }
 
 // SetProbeRttMax ...
