@@ -9,6 +9,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	CRDResourceKind = "Octopinger"
+)
+
 func init() {
 	SchemeBuilder.Register(&Octopinger{}, &OctopingerList{})
 }
@@ -36,15 +40,6 @@ type Octopinger struct {
 // OctopingerSpec defines the desired state of Octopinger
 // +k8s:openapi-gen=true
 type OctopingerSpec struct {
-	// Version is the expected version of octopinger.
-	// The operator will eventually make the octopinger version
-	// equal to the expected version.
-	//
-	// The version must follow the [semver]( http://semver.org) format, for example "1.0.4".
-	// Only octopinger released versions are supported: https://github.com/ionos-cloud/octopinger/releases
-	//
-	Version string `json:"version"`
-
 	// Label is the value of the 'octopinger=' label to set on a node that should run octopinger.
 	Label string `json:"label"`
 
@@ -173,14 +168,17 @@ func (cs *OctopingerStatus) IsFailed() bool {
 	return cs.Phase == OctopingerPhaseFailed
 }
 
+// SetPhase ...
 func (cs *OctopingerStatus) SetPhase(p OctopingerPhase) {
 	cs.Phase = p
 }
 
+// PauseControl ...
 func (cs *OctopingerStatus) PauseControl() {
 	cs.ControlPaused = true
 }
 
+// Control ...
 func (cs *OctopingerStatus) Control() {
 	cs.ControlPaused = false
 }
@@ -190,10 +188,12 @@ func (cs *OctopingerStatus) SetSize(size int) {
 	cs.Size = size
 }
 
+// SetCurrentVersion ...
 func (cs *OctopingerStatus) SetCurrentVersion(v string) {
 	cs.CurrentVersion = v
 }
 
+// SetReason ...
 func (cs *OctopingerStatus) SetReason(r string) {
 	cs.Reason = r
 }

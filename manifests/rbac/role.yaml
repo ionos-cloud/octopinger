@@ -59,7 +59,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - octopingers.io
+  - octopinger.io
   resources:
   - octopinger
   - octopinger/status

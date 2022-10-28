@@ -5,7 +5,6 @@ metadata:
 spec:
   image: ghcr.io/ionos-cloud/octopinger/octopinger:latest
   label: octopinger
-  version: 0.0.1
   probes:
     - type: icmp
       enabled: true

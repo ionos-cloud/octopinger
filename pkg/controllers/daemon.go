@@ -5,13 +5,13 @@ import (
 	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
+	"github.com/ionos-cloud/octopinger/pkg/utils"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,69 +43,94 @@ type daemonReconciler struct {
 // Reconcile ...
 func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
+	log.Info("Reconciling Octopinger")
 
-	o := &v1alpha1.Octopinger{}
+	octopinger := &v1alpha1.Octopinger{}
 
-	err := d.Get(ctx, r.NamespacedName, o)
+	err := d.Get(ctx, r.NamespacedName, octopinger)
+	if err != nil && errors.IsNotFound(err) {
+		// Request object not found, could have been deleted after reconcile request.
+		return reconcile.Result{}, nil
+	}
+
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	nodeList := &corev1.NodeList{}
-	err = d.List(ctx, nodeList)
+	// get the latest version of octopinger instance before reconciling
+	err = d.Get(ctx, r.NamespacedName, octopinger)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	configMap := &corev1.ConfigMap{}
-	err = d.Get(ctx, types.NamespacedName{Name: o.Name + "-config", Namespace: o.Namespace}, configMap, &client.GetOptions{})
-	if err != nil && !errors.IsNotFound(err) {
+	err = d.reconcileResources(ctx, octopinger)
+	if err != nil {
+		// Error reconciling Octopinger sub-resources - requeue the request.
 		return reconcile.Result{}, err
 	}
 
-	cfg := o.Spec.Probes.ConfigMap()
-	cfg["nodes"] = ""
+	return reconcile.Result{}, nil
+}
 
-	configMap = &corev1.ConfigMap{
+func (d *daemonReconciler) reconcileStatus(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
+	phase := v1alpha1.OctopingerPhaseNone
+
+	ds := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      o.Name + "-config",
-			Namespace: o.Namespace,
+			Name:      octopinger.Name + "-daemonset",
+			Namespace: octopinger.Namespace,
 		},
-		Data: cfg,
+	}
+	if utils.IsObjectFound(ctx, d, octopinger.Namespace, ds.Name, ds) {
+		phase = v1alpha1.OctopingerPhaseCreating
+
+		if ds.Status.CurrentNumberScheduled == ds.Status.DesiredNumberScheduled {
+			phase = v1alpha1.OctopingerPhaseRunning
+		}
 	}
 
-	err = d.Create(ctx, configMap)
-	if err != nil && !errors.IsAlreadyExists(err) {
-		return reconcile.Result{}, err
+	if octopinger.Status.Phase != phase {
+		octopinger.Status.Phase = phase
+
+		return d.Status().Update(ctx, octopinger)
 	}
 
-	err = controllerutil.SetControllerReference(o, configMap, d.scheme)
+	return nil
+}
+
+func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
+	configMap := &corev1.ConfigMap{}
+
+	err := utils.FetchObject(ctx, d, octopinger.Namespace, octopinger.Name+"-config", configMap)
 	if err != nil {
-		return reconcile.Result{}, err
+		return err
 	}
+
+	cfg := octopinger.Spec.Probes.ConfigMap()
+	cfg["nodes"] = ""
 
 	items := []corev1.KeyToPath{}
 	for k := range cfg {
 		items = append(items, corev1.KeyToPath{Key: k, Path: k})
 	}
 
-	deploy := &appsv1.DaemonSet{
+	ds := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      o.Name + "-daemonset",
-			Namespace: o.Namespace,
+			Name:      octopinger.Name + "-daemonset",
+			Namespace: octopinger.Namespace,
 		},
 		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"daemonset":  o.Name + "-daemonset",
-					"octopinger": o.Name,
+					"daemonset":  octopinger.Name + "-daemonset",
+					"octopinger": octopinger.Name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"daemonset":  o.Name + "-daemonset",
-						"octopinger": o.Name,
+						"daemonset":  octopinger.Name + "-daemonset",
+						"octopinger": octopinger.Name,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -113,7 +138,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 						{
 							Name:            "octopinger-container",
 							ImagePullPolicy: corev1.PullAlways,
-							Image:           o.Spec.Image,
+							Image:           octopinger.Spec.Image,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "config-vol",
@@ -153,7 +178,7 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: o.Name + "-config",
+										Name: octopinger.Name + "-config",
 									},
 									Items: items,
 								},
@@ -165,37 +190,59 @@ func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 		},
 	}
 
-	log = log.WithValues("octopinger", deploy.ObjectMeta.Name)
+	existingDS := &appsv1.DaemonSet{}
+	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", configMap) {
+		if !reflect.DeepEqual(existingDS, ds) {
+			ds = existingDS
+			return d.Update(ctx, existingDS)
+		}
 
-	err = controllerutil.SetControllerReference(o, deploy, d.scheme)
+		return nil
+	}
+
+	return d.Create(ctx, ds)
+}
+
+func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
+	configMap := &corev1.ConfigMap{}
+	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-config", configMap) {
+		return nil
+	}
+
+	cfg := octopinger.Spec.Probes.ConfigMap()
+	cfg["nodes"] = ""
+
+	configMap = &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      octopinger.Name + "-config",
+			Namespace: octopinger.Namespace,
+		},
+		Data: cfg,
+	}
+
+	err := controllerutil.SetControllerReference(octopinger, configMap, d.scheme)
 	if err != nil {
-		return reconcile.Result{}, err
+		return err
 	}
 
-	found := &appsv1.DaemonSet{}
-	err = d.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
-	if err != nil && !errors.IsNotFound(err) {
-		return reconcile.Result{}, err
+	return d.Create(ctx, configMap)
+}
+
+func (d *daemonReconciler) reconcileResources(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
+	err := d.reconcileStatus(ctx, octopinger)
+	if err != nil {
+		return err
 	}
 
-	if errors.IsNotFound(err) {
-		log.Info("creating daemonset")
-
-		err = d.Create(ctx, deploy)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
+	err = d.reconcileConfigMaps(ctx, octopinger)
+	if err != nil {
+		return err
 	}
 
-	if !reflect.DeepEqual(deploy.Spec, found.Spec) {
-		log.Info("updating daemonset")
-
-		found.Spec = deploy.Spec
-		err = d.Update(ctx, found)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
+	err = d.reconcileDaemonSets(ctx, octopinger)
+	if err != nil {
+		return err
 	}
 
-	return reconcile.Result{}, nil
+	return nil
 }

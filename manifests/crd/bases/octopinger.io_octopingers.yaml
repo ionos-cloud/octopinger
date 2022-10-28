@@ -65,18 +65,10 @@ spec:
                   - type
                   type: object
                 type: array
-              version:
-                description: "Version is the expected version of octopinger. The operator
-                  will eventually make the octopinger version equal to the expected
-                  version. \n The version must follow the [semver]( http://semver.org)
-                  format, for example \"1.0.4\". Only octopinger released versions
-                  are supported: https://github.com/ionos-cloud/octopinger/releases"
-                type: string
             required:
             - image
             - label
             - probes
-            - version
             type: object
           status:
             description: OctopingerStatus defines the observed state of Octopinger
