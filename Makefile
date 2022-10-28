@@ -1,4 +1,4 @@
-VERSION ?= 0.0.28
+VERSION ?= 0.0.30
 
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
@@ -14,13 +14,13 @@ generate:
 
 docker-minikube:
 	minikube -p octopinger image rm ${IMG}
-	minikube -p octopinger image rm ghcr.io/ionos-cloud/octopinger/octopinger:latest
+	minikube -p octopinger image rm ghcr.io/ionos-cloud/octopinger/octopinger:v$(VERSION)
 
-	@docker build --build-arg BINARY=octopinger-linux-amd64 -f Dockerfile -t ghcr.io/ionos-cloud/octopinger/octopinger:latest ./dist
+	@docker build --build-arg BINARY=octopinger-linux-amd64 -f Dockerfile -t ghcr.io/ionos-cloud/octopinger/octopinger:v$(VERSION) ./dist
 	@docker build --build-arg BINARY=operator-linux-amd64 -f Dockerfile.nonroot -t ${IMG} ./dist
 
 	minikube -p octopinger image load ${IMG}
-	minikube -p octopinger image load ghcr.io/ionos-cloud/octopinger/octopinger:latest
+	minikube -p octopinger image load ghcr.io/ionos-cloud/octopinger/octopinger:v$(VERSION)
 
 ##@ Build
 

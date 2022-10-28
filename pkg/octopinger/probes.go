@@ -24,9 +24,6 @@ type statistics struct {
 	reportNumber *reportNumber
 	packetLoss   *packetLoss
 
-	probeName string
-	nodeName  string
-
 	Collector
 	sync.RWMutex
 }
@@ -45,14 +42,12 @@ func (s *statistics) Collect(ch chan<- Metric) {
 func NewStatistics(probeName, nodeName string) *statistics {
 	s := new(statistics)
 
-	s.nodeName = nodeName
-	s.probeName = probeName
-	s.maxRtt = NewMaxRtt(s.probeName, s.nodeName)
-	s.minRtt = NewMinRtt(s.probeName, s.nodeName)
-	s.meanRtt = NewMeanRtt(s.probeName, s.nodeName)
-	s.totalNumber = NewTotalNumber(s.probeName, s.nodeName)
-	s.reportNumber = NewReportNumber(s.probeName, s.nodeName)
-	s.packetLoss = NewPacketLoss(s.probeName, s.nodeName)
+	s.maxRtt = NewMaxRtt(probeName, nodeName)
+	s.minRtt = NewMinRtt(probeName, nodeName)
+	s.meanRtt = NewMeanRtt(probeName, nodeName)
+	s.totalNumber = NewTotalNumber(probeName, nodeName)
+	s.reportNumber = NewReportNumber(probeName, nodeName)
+	s.packetLoss = NewPacketLoss(probeName, nodeName)
 
 	return s
 }
@@ -334,16 +329,10 @@ type Probe interface {
 }
 
 type icmpProbe struct {
-	opts  *Opts
-	stats *statistics
+	opts *Opts
 
 	name     string
 	nodeName string
-}
-
-// Collect ...
-func (i *icmpProbe) Collect(ch chan<- Metric) {
-	i.stats.Collect(ch)
 }
 
 // NewICMPProbe ...
@@ -389,11 +378,11 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 					return err
 				}
 
-				g, gctx := errgroup.WithContext(ctx)
-				g.SetLimit(10)
-
 				stats := NewStatistics(i.name, i.nodeName)
 				stats.SetTotalNumber(float64(len(nodes)))
+
+				g, gctx := errgroup.WithContext(ctx)
+				g.SetLimit(10)
 
 				for _, n := range nodes {
 					node := n

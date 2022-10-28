@@ -76,6 +76,7 @@ func runE(ctx context.Context) error {
 		octopinger.WithConfigPath(f.ConfigPath),
 		octopinger.WithMonitor(m),
 		octopinger.WithNodeName(f.Nodename),
+		octopinger.WithPodIP(f.PodIP),
 	)
 	srv.Listen(o, false)
 

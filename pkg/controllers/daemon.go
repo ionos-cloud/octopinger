@@ -209,6 +209,11 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 		return nil
 	}
 
+	err = controllerutil.SetControllerReference(octopinger, ds, d.scheme)
+	if err != nil {
+		return err
+	}
+
 	return d.Create(ctx, ds)
 }
 
