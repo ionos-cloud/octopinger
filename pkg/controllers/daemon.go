@@ -193,7 +193,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 	existingDS := &appsv1.DaemonSet{}
 	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", configMap) {
 		if !reflect.DeepEqual(existingDS, ds) {
-			ds = existingDS
+			existingDS = ds
 			return d.Update(ctx, existingDS)
 		}
 
