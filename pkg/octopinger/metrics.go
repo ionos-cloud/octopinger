@@ -215,6 +215,7 @@ func (m *Monitor) Gather(collector Collector) {
 	defer m.Unlock()
 
 	ch := make(chan Metric)
+	defer func() { close(ch) }()
 
 	go func() {
 		for metric := range ch {
@@ -223,7 +224,6 @@ func (m *Monitor) Gather(collector Collector) {
 	}()
 
 	collector.Collect(ch)
-	close(ch)
 }
 
 // SetProbeHealth ...

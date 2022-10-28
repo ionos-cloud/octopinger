@@ -44,25 +44,17 @@ func (s *statistics) Collect(ch chan<- Metric) {
 // NewStatistics ...
 func NewStatistics(probeName, nodeName string) *statistics {
 	s := new(statistics)
+
 	s.nodeName = nodeName
 	s.probeName = probeName
-
-	s.Reset()
-
-	return s
-}
-
-// Reset ...
-func (s *statistics) Reset() {
-	s.Lock()
-	defer s.Unlock()
-
 	s.maxRtt = NewMaxRtt(s.probeName, s.nodeName)
 	s.minRtt = NewMinRtt(s.probeName, s.nodeName)
 	s.meanRtt = NewMeanRtt(s.probeName, s.nodeName)
 	s.totalNumber = NewTotalNumber(s.probeName, s.nodeName)
 	s.reportNumber = NewReportNumber(s.probeName, s.nodeName)
 	s.packetLoss = NewPacketLoss(s.probeName, s.nodeName)
+
+	return s
 }
 
 type maxRtt struct {
@@ -360,9 +352,7 @@ func NewICMPProbe(nodeName string, opts ...Opt) *icmpProbe {
 	options.Configure(opts...)
 
 	p := new(icmpProbe)
-	p.stats = NewStatistics("icmp", nodeName)
 	p.opts = options
-
 	p.nodeName = nodeName
 	p.name = "icmp"
 
@@ -402,7 +392,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				g, gctx := errgroup.WithContext(ctx)
 				g.SetLimit(10)
 
-				i.stats.Reset()
+				stats := NewStatistics(i.name, i.nodeName)
 				i.stats.SetTotalNumber(float64(len(nodes)))
 
 				for _, n := range nodes {
@@ -441,7 +431,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 					return err
 				}
 
-				metrics.Gather(i)
+				metrics.Gather(stats)
 
 				ticker.Reset(30 * time.Second)
 
