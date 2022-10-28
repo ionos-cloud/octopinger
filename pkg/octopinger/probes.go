@@ -393,7 +393,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				g.SetLimit(10)
 
 				stats := NewStatistics(i.name, i.nodeName)
-				i.stats.SetTotalNumber(float64(len(nodes)))
+				stats.SetTotalNumber(float64(len(nodes)))
 
 				for _, n := range nodes {
 					node := n
@@ -415,12 +415,12 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 							return nil
 						}
 
-						i.stats.IncReportNumber()
-						i.stats.AddMaxRtt(float64(pinger.Statistics().MaxRtt.Microseconds()))
-						i.stats.AddMinRtt(float64(pinger.Statistics().MinRtt.Microseconds()))
-						i.stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
-						i.stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
-						i.stats.AddPacketLoss(pinger.Statistics().PacketLoss)
+						stats.IncReportNumber()
+						stats.AddMaxRtt(float64(pinger.Statistics().MaxRtt.Microseconds()))
+						stats.AddMinRtt(float64(pinger.Statistics().MinRtt.Microseconds()))
+						stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
+						stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
+						stats.AddPacketLoss(pinger.Statistics().PacketLoss)
 
 						return nil
 					})
