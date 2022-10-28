@@ -169,9 +169,18 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 										},
 									},
 								},
+								{
+									Name: "POD_IP",
+									ValueFrom: &corev1.EnvVarSource{
+										FieldRef: &corev1.ObjectFieldSelector{
+											FieldPath: "status.podIP",
+										},
+									},
+								},
 							},
 						},
 					},
+					Tolerations: octopinger.Spec.Tolerations,
 					Volumes: []corev1.Volume{
 						{
 							Name: "config-vol",

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"golang.org/x/exp/maps"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,6 +49,9 @@ type OctopingerSpec struct {
 
 	// Probes ...
 	Probes Probes `json:"probes"`
+
+	// Tolerations ...
+	Tolerations []corev1.Toleration `json:"tolerations"`
 }
 
 // Probes ...

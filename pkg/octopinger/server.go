@@ -15,12 +15,13 @@ type server struct {
 
 // Opts ...
 type Opts struct {
-	monitor    *Monitor
-	logger     *zap.Logger
-	nodeName   string
 	configPath string
-	timeout    time.Duration
 	interval   time.Duration
+	logger     *zap.Logger
+	monitor    *Monitor
+	nodeName   string
+	podIP      string
+	timeout    time.Duration
 }
 
 // Configure ...
@@ -72,6 +73,13 @@ func WithTimeout(time time.Duration) Opt {
 func WithInterval(time time.Duration) Opt {
 	return func(o *Opts) {
 		o.interval = time
+	}
+}
+
+// WithPodIP ...
+func WithPodIP(ip string) Opt {
+	return func(o *Opts) {
+		o.podIP = ip
 	}
 }
 

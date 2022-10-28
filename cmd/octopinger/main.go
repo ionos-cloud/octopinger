@@ -37,6 +37,7 @@ func init() {
 	rootCmd.Flags().StringVar(&f.ConfigPath, "config", f.ConfigPath, "config")
 	rootCmd.Flags().StringVar(&f.StatusAddr, "status-addr", f.StatusAddr, "status addr")
 	rootCmd.Flags().StringVar(&f.Nodename, "nodename", f.Nodename, "node name")
+	rootCmd.Flags().StringVar(&f.PodIP, "pod-ip", f.PodIP, "pod ip")
 }
 
 func main() {
