@@ -3,7 +3,7 @@ kind: Octopinger
 metadata:
   name: demo
 spec:
-  image: ghcr.io/ionos-cloud/octopinger/octopinger:0.0.29
+  image: ghcr.io/ionos-cloud/octopinger/octopinger:0.0.30
   label: octopinger
   tolerations:
   - key: "example-key"
