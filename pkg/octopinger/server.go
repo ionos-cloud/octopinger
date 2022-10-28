@@ -106,6 +106,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			WithConfigPath(s.opts.configPath),
 			WithNodeName(s.opts.nodeName),
 			WithLogger(s.opts.logger),
+			WithPodIP(s.opts.podIP),
 		}
 
 		if cfg.ICMP.Enabled {

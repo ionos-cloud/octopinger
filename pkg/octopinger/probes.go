@@ -380,21 +380,27 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 		ticker := time.NewTicker(1 * time.Second)
 		defer ticker.Stop()
 
+		loaders := []NodeLoader{
+			NodesLoader(i.opts.configPath),
+		}
+
+		filters := []NodeFilter{
+			FilterIP(i.opts.podIP),
+		}
+
+		nodeList := NewNodeList(loaders, filters...)
+
 		for {
 			select {
 			case <-ctx.Done():
 			case <-ticker.C:
-				nodeList := NewNodeList()
-
-				err := nodeList.Load(i.opts.configPath, "nodes")
+				nodes, err := nodeList.Load()
 				if err != nil {
 					return err
 				}
 
 				g, gctx := errgroup.WithContext(ctx)
 				g.SetLimit(10)
-
-				nodes := nodeList.Nodes()
 
 				i.stats.Reset()
 				i.stats.SetTotalNumber(float64(len(nodes)))

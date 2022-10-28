@@ -12,38 +12,78 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-// NodeList ...
-type NodeList struct {
-	nodes []string
+// NodeFilter ...
+type NodeFilter func(node string) bool
+
+// FilterIP ...
+func FilterIP(ip string) NodeFilter {
+	return func(node string) bool {
+		return node == ip
+	}
 }
 
-// Nodes ...
-func (n *NodeList) Nodes() []string {
-	return n.nodes
+// NodeLoader ...
+type NodeLoader func() ([]string, error)
+
+// NodeLoader ...
+func NodesLoader(base string) NodeLoader {
+	return func() ([]string, error) {
+		p := path.Clean(path.Join(base, "nodes"))
+		nodes := make([]string, 0)
+
+		f, err := os.Open(p)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+
+		for scanner.Scan() {
+			nodes = append(nodes, scanner.Text())
+		}
+
+		return nodes, nil
+	}
 }
 
 // Load ...
-func (n *NodeList) Load(base, file string) error {
-	n.nodes = nil
+func (n *NodeList) Load() ([]string, error) {
+	nodes := make([]string, 0)
 
-	f, err := os.Open(path.Join(base, file))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-
-	for scanner.Scan() {
-		n.nodes = append(n.nodes, scanner.Text())
+	for _, loader := range n.loaders {
+		n, err := loader()
+		if err != nil {
+			return nil, err
+		}
+		nodes = append(nodes, n...)
 	}
 
-	return nil
+	for i := len(nodes) - 1; i >= 0; i-- {
+		for _, filter := range n.filters {
+			ok := filter(nodes[i])
+			if ok {
+				nodes = append(nodes[:i], nodes[i+1:]...)
+			}
+		}
+	}
+
+	return nodes, nil
+}
+
+// NodeList ...
+type NodeList struct {
+	loaders []NodeLoader
+	filters []NodeFilter
 }
 
 // NewNodeList ...
-func NewNodeList() *NodeList {
-	return &NodeList{}
+func NewNodeList(loaders []NodeLoader, filters ...NodeFilter) *NodeList {
+	n := new(NodeList)
+	n.loaders = loaders
+	n.filters = filters
+
+	return n
 }
 
 // Config ...
