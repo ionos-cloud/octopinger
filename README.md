@@ -21,7 +21,7 @@ kubectl create namespace octopinger
 Next, install the custom resource defintions, service accounts, roles and operator.
 
 ```bash
-kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.0.26/manifests/install.yaml
+kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.0.28/manifests/install.yaml
 ```
 
 Now, you are ready to install octopinger to your cluster.
@@ -32,6 +32,17 @@ kubectl apply -n octopinger examples/octopinger_simple.yaml
 
 ## Metrics
 
+This is the list of Prometheus metrics :octopus: Octopinger is exporting.
+
+* `octopinger_probe_nodes_total`
+* `octopinger_probe_nodes_reports`
+* `octopinger_probe_rtt_min`
+* `octopinger_probe_rtt_mean`
+* `octopinger_probe_rtt_max`
+* `octopinger_probe_loss_min`
+* `octopinger_probe_loss_max`
+* `octopinger_probe_loss_mean`
+* `octopinger_probe_health_total`
 
 ## License
 

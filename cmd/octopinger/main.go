@@ -46,7 +46,7 @@ func main() {
 }
 
 func runE(ctx context.Context) error {
-	logger, err := zap.NewDevelopment()
+	logger, err := zap.NewProduction()
 	if err != nil {
 		return err
 	}
@@ -63,10 +63,7 @@ func runE(ctx context.Context) error {
 		return err
 	}
 
-	m, err := octopinger.NewMonitor(octopinger.DefaultMetrics)
-	if err != nil {
-		return err
-	}
+	m := octopinger.NewMonitor(octopinger.DefaultMetrics)
 
 	api := octopinger.NewAPI(
 		octopinger.WithAddr(f.StatusAddr),

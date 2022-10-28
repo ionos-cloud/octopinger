@@ -197,7 +197,7 @@ spec:
       containers:
       - command:
         - /main
-        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.26
+        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.28
         name: operator
         securityContext:
           allowPrivilegeEscalation: false

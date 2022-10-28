@@ -94,19 +94,14 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			return err
 		}
 
-		probes := []Probe{}
-		if cfg.ICMP.Enabled {
-			probes = append(probes, NewICMPProbe(WithMonitor(s.opts.monitor)))
+		opts := []Opt{
+			WithConfigPath(s.opts.configPath),
+			WithNodeName(s.opts.nodeName),
+			WithLogger(s.opts.logger),
 		}
 
-		for _, probe := range probes {
-			p := NewProber(
-				WithMonitor(s.opts.monitor),
-				WithConfigPath(s.opts.configPath),
-				WithNodeName(s.opts.nodeName),
-				WithLogger(s.opts.logger),
-			)
-			run(p.Do(ctx, probe))
+		if cfg.ICMP.Enabled {
+			run(NewICMPProbe(s.opts.nodeName, opts...).Do(ctx, s.opts.monitor))
 		}
 
 		<-ctx.Done()
