@@ -232,7 +232,7 @@ spec:
       containers:
       - command:
         - /main
-        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.31
+        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.32
         name: operator
         securityContext:
           allowPrivilegeEscalation: false
