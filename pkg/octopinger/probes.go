@@ -5,9 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-ping/ping"
+	"github.com/chenjiandongx/pinger"
 	"github.com/montanaflynn/stats"
-	"golang.org/x/sync/errgroup"
 )
 
 // Collector ...
@@ -50,6 +49,11 @@ func NewStatistics(probeName, nodeName string) *statistics {
 	s.packetLoss = NewPacketLoss(probeName, nodeName)
 
 	return s
+}
+
+// Reset ...
+func (s *statistics) Reset() {
+
 }
 
 type maxRtt struct {
@@ -378,51 +382,29 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 					return err
 				}
 
-				stats := NewStatistics(i.name, i.nodeName)
-				stats.SetTotalNumber(float64(len(nodes)))
+				opt := *pinger.DefaultICMPPingOpts
+				opt.Interval = func() time.Duration { return 100 * time.Millisecond }
+				opt.PingCount = 5
+				opt.PingTimeout = 5 * time.Second
 
-				g, gctx := errgroup.WithContext(ctx)
-				g.SetLimit(10)
+				statistics := NewStatistics(i.name, i.nodeName)
+				statistics.SetTotalNumber(float64(len(nodes)))
 
-				for _, n := range nodes {
-					node := n
-					g.Go(func() error {
-						pinger, err := ping.NewPinger(node)
-						if err != nil {
-							return nil
-						}
-						pinger.SetPrivileged(true)
-
-						go func() {
-							<-gctx.Done()
-							pinger.Stop()
-						}()
-
-						pinger.Count = 5
-						err = pinger.Run()
-						if err != nil {
-							return nil
-						}
-
-						stats.IncReportNumber()
-						stats.AddMaxRtt(float64(pinger.Statistics().MaxRtt.Microseconds()))
-						stats.AddMinRtt(float64(pinger.Statistics().MinRtt.Microseconds()))
-						stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
-						stats.AddMeanRtt(float64(pinger.Statistics().AvgRtt.Microseconds()))
-						stats.AddPacketLoss(pinger.Statistics().PacketLoss)
-
-						return nil
-					})
-				}
-
-				err = g.Wait()
+				stats, err := pinger.ICMPPing(&opt, nodes...)
 				if err != nil {
 					return err
 				}
 
-				metrics.Gather(stats)
+				for _, stat := range stats {
+					statistics.IncReportNumber()
+					statistics.AddMaxRtt(float64(stat.Worst.Microseconds()))
+					statistics.AddMinRtt(float64(stat.Best.Microseconds()))
+					statistics.AddMeanRtt(float64(stat.Mean.Microseconds()))
+					statistics.AddPacketLoss(float64(stat.PktLossRate))
+				}
 
-				ticker.Reset(30 * time.Second)
+				metrics.Gather(statistics)
+				ticker.Reset(1 * time.Second)
 
 				continue
 			}

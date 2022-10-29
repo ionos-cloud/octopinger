@@ -4,8 +4,8 @@ go 1.19
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
+	github.com/chenjiandongx/pinger v0.2.0
 	github.com/go-logr/logr v1.2.3
-	github.com/go-ping/ping v1.1.0
 	github.com/gofiber/adaptor/v2 v2.1.25
 	github.com/gofiber/fiber/v2 v2.38.1
 	github.com/golang/mock v1.6.0
@@ -16,7 +16,6 @@ require (
 	github.com/spf13/cobra v1.6.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/exp v0.0.0-20221023144134-a1e5550cf13e
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
@@ -39,6 +38,8 @@ require (
 	github.com/bombsimon/wsl v1.2.5 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/digineo/go-logwrap v0.0.0-20181106161722-a178c58ea3f0 // indirect
+	github.com/digineo/go-ping v1.0.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
@@ -155,6 +156,7 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
+	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
