@@ -4,7 +4,7 @@
 [![Taylor Swift](https://img.shields.io/badge/secured%20by-taylor%20swift-brightgreen.svg)](https://twitter.com/SwiftOnSecurity)
 [![Volkswagen](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/auchenberg/volkswagen)
 
-Octopinger is an Kubernetes Operator to monitor the connectivity of your cluster. It supports `ICMP` and `TCP` to probe connectivity between cluster and also external references. Metrics are exported via [Prometheus](https://prometheus.io/).
+Octopinger is an Kubernetes Operator to monitor the connectivity of your cluster. The probes use `ICMP` to determine the connectivity between cluster nodes. Metrics are exported via [Prometheus](https://prometheus.io/).
 
 ## Get Started
 
