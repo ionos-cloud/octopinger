@@ -22,6 +22,10 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.19
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.10.0
     - uses: docker/login-action@v2
       with:
         registry: ghcr.io
@@ -34,9 +38,14 @@ jobs:
         version: latest
         args: release
       if: success()
-    - uses: Co-qn/google-chat-notification@releases/v1
-      with:
-        name: Octopinger ${{ env.RELEASE_VERSION }}
-        url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-        status: ${{ job.status }}
-      if: always()
+    - run: |
+          go run cmd/updater/updater.go --file charts/octopinger/Chart.yaml --version ${{ env.RELEASE_VERSION }}
+    - uses: helm/chart-releaser-action@v1.4.1
+      env:
+        CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    # - uses: Co-qn/google-chat-notification@releases/v1
+    #   with:
+    #     name: Octopinger ${{ env.RELEASE_VERSION }}
+    #     url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+    #     status: ${{ job.status }}
+    #   if: always()
