@@ -11,6 +11,12 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 
 generate:
 	@go generate ./...
+	@go run cmd/manifest/manifest.go --file manifests/crd/bases/octopinger.io_octopingers.yaml \
+		--file manifests/install/service_account.yaml \
+		--file manifests/install/cluster_role.yaml \
+		--file manifests/install/cluster_role_binding.yaml \
+		--file manifests/install/statefulset.yaml \
+		--output manifests/install.yaml
 
 docker-minikube:
 	minikube -p octopinger image rm ${IMG}

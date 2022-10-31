@@ -14,6 +14,7 @@ require (
 	github.com/montanaflynn/stats v0.6.6
 	github.com/prometheus/client_golang v1.12.2
 	github.com/spf13/cobra v1.6.0
+	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.21.0
 	golang.org/x/exp v0.0.0-20221023144134-a1e5550cf13e
 	k8s.io/api v0.25.3
@@ -134,7 +135,6 @@ require (
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.0 // indirect
 	github.com/spf13/jwalterweatherman v1.0.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.0 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect

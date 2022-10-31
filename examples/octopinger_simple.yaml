@@ -15,5 +15,3 @@ spec:
       properties:
         timeout: 1m
         interval: 1m
-        external: |
-          1.1.1.1
