@@ -28,7 +28,6 @@ func init() {
 // +kubebuilder:subresource:status
 // +operator-sdk:csv:customresourcedefinitions:resources={{Octopinger,v1alpha1,""}}
 // +operator-sdk:csv:customresourcedefinitions:resources={{Pod,v1,""}}
-// +operator-sdk:csv:customresourcedefinitions:resources={{Prometheus,v1,""}}
 // +operator-sdk:csv:customresourcedefinitions:resources={{ReplicaSet,v1,""}}
 type Octopinger struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -51,7 +50,7 @@ type OctopingerSpec struct {
 	Probes Probes `json:"probes"`
 
 	// Tolerations ...
-	Tolerations []corev1.Toleration `json:"tolerations"`
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // Probes ...
@@ -123,44 +122,15 @@ const (
 	OctopingerPhaseFailed   OctopingerPhase = "Failed"
 )
 
-type OctopingerConditionType string
-
-const (
-	OctopingerConditionReady = "Ready"
-
-	OctopingerConditionScalingUp   = "ScalingUp"
-	OctopingerConditionScalingDown = "ScalingDown"
-
-	OctopingerConditionUpgrading = "Upgrading"
-)
-
-type OctopingerCondition struct {
-	Type OctopingerConditionType `json:"type"`
-
-	Reason string `json:"reason"`
-
-	TransitionTime string `json:"transitionTime"`
-}
-
 // OctopingerStatus defines the observed state of Octopinger
 // +k8s:openapi-gen=true
 type OctopingerStatus struct {
 	// Phase is the octopinger running phase.
-	Phase  OctopingerPhase `json:"phase"`
-	Reason string          `json:"reason"`
+	Phase OctopingerPhase `json:"phase"`
 
 	// ControlPaused indicates the operator pauses the control of
 	// octopinger.
-	ControlPaused bool `json:"controlPaused"`
-
-	// Condition keeps ten most recent octopinger conditions.
-	Conditions []OctopingerCondition `json:"conditions"`
-
-	// Size is the number of nodes the daemon is deployed to.
-	Size int `json:"size"`
-
-	// CurrentVersion is the current octopinger version.
-	CurrentVersion string `json:"currentVersion"`
+	ControlPaused bool `json:"controlPaused,omitempty"`
 }
 
 // IsFailed ...
@@ -185,19 +155,4 @@ func (cs *OctopingerStatus) PauseControl() {
 // Control ...
 func (cs *OctopingerStatus) Control() {
 	cs.ControlPaused = false
-}
-
-// SetSize sets the current size of the cluster.
-func (cs *OctopingerStatus) SetSize(size int) {
-	cs.Size = size
-}
-
-// SetCurrentVersion ...
-func (cs *OctopingerStatus) SetCurrentVersion(v string) {
-	cs.CurrentVersion = v
-}
-
-// SetReason ...
-func (cs *OctopingerStatus) SetReason(r string) {
-	cs.Reason = r
 }

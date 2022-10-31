@@ -109,49 +109,19 @@ spec:
             - image
             - label
             - probes
-            - tolerations
             type: object
           status:
             description: OctopingerStatus defines the observed state of Octopinger
             properties:
-              conditions:
-                description: Condition keeps ten most recent octopinger conditions.
-                items:
-                  properties:
-                    reason:
-                      type: string
-                    transitionTime:
-                      type: string
-                    type:
-                      type: string
-                  required:
-                  - reason
-                  - transitionTime
-                  - type
-                  type: object
-                type: array
               controlPaused:
                 description: ControlPaused indicates the operator pauses the control
                   of octopinger.
                 type: boolean
-              currentVersion:
-                description: CurrentVersion is the current octopinger version.
-                type: string
               phase:
                 description: Phase is the octopinger running phase.
                 type: string
-              reason:
-                type: string
-              size:
-                description: Size is the number of nodes the daemon is deployed to.
-                type: integer
             required:
-            - conditions
-            - controlPaused
-            - currentVersion
             - phase
-            - reason
-            - size
             type: object
         type: object
     served: true
