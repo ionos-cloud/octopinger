@@ -51,9 +51,9 @@ jobs:
       with:
         charts_dir: charts
         config: ${{ github.workspace }}/.cr.yaml
-    # - uses: Co-qn/google-chat-notification@releases/v1
-    #   with:
-    #     name: Octopinger ${{ env.RELEASE_VERSION }}
-    #     url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-    #     status: ${{ job.status }}
-    #   if: always()
+    - uses: Co-qn/google-chat-notification@releases/v1
+      with:
+        name: Octopinger ${{ env.RELEASE_VERSION }}
+        url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        status: ${{ job.status }}
+      if: always()

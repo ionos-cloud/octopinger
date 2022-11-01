@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/pflag"
 	"golang.org/x/mod/semver"
@@ -36,8 +36,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	meta.AppVersion = fmt.Sprintf("v%s", f.Version)
-	meta.Version = f.Version
+	meta.AppVersion = f.Version
+	meta.Version = strings.TrimPrefix(f.Version, "v")
 
 	err = chartutil.SaveChartfile(f.File, meta)
 	if err != nil {

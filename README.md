@@ -30,6 +30,13 @@ Now, you are ready to install octopinger to your cluster.
 kubectl apply -n octopinger examples/octopinger_simple.yaml
 ```
 
+## Helm
+
+```bash
+helm repo add https://ionos-cloud.github.io/octopinger/
+helm repo update 
+```
+
 ## Metrics
 
 This is the list of Prometheus metrics :octopus: Octopinger is exporting.
