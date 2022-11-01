@@ -35,7 +35,7 @@ kubectl apply -n octopinger -f examples/octopinger_simple.yaml
 [Helm](https://helm.sh/) can be used to install :octopus: Octopinger to your cluster.
 
 ```bash
-helm repo add https://octopinger.io/
+helm repo add octopinger https://octopinger.io/
 helm repo update 
 ```
 
