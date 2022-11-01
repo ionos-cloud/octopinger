@@ -1,1 +1,1 @@
-release-name-template: {{ .Name }}-chart-{{ .Version }}
+release-name-template: "{{ .Name }}-chart-{{ .Version }}"

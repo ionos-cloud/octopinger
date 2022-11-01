@@ -49,7 +49,8 @@ jobs:
       env:
         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       with:
-        config: .cr.yaml
+        charts_dir: charts
+        config: ${{ env.GITHUB_WORKSPACE }}/.cr.yaml
     # - uses: Co-qn/google-chat-notification@releases/v1
     #   with:
     #     name: Octopinger ${{ env.RELEASE_VERSION }}
