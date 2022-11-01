@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -35,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	meta.AppVersion = f.Version
+	meta.AppVersion = fmt.Sprintf("v%s", f.Version)
 	meta.Version = f.Version
 
 	err = chartutil.SaveChartfile(f.File, meta)

@@ -1,9 +1,9 @@
 apiVersion: v2
-appVersion: v0.0.33
+appVersion: v0.0.0
 kubeVersion: ">=1.22.0-0"
 description: A Helm chart for Octopinger, a declarative, Kubernetes Operator to monitor the connectivity of your cluster.
 name: octopinger
-version: 0.0.33
+version: 0.0.0
 home: https://github.com/ionos-cloud/octopinger
 sources:
   - https://github.com/ionos-cloud/octopinger/tree/main/charts/octopinger
