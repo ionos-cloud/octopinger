@@ -27,7 +27,7 @@ kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/oct
 Now, you are ready to install octopinger to your cluster.
 
 ```bash
-kubectl apply -n octopinger examples/octopinger_simple.yaml
+kubectl apply -n octopinger -f examples/octopinger_simple.yaml
 ```
 
 ## Helm
@@ -35,7 +35,7 @@ kubectl apply -n octopinger examples/octopinger_simple.yaml
 [Helm](https://helm.sh/) can be used to install :octopus: Octopinger to your cluster.
 
 ```bash
-helm repo add https://ionos-cloud.github.io/octopinger/
+helm repo add https://octopinger.io/
 helm repo update 
 ```
 
