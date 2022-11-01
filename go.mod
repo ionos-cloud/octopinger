@@ -6,8 +6,8 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/chenjiandongx/pinger v0.2.0
 	github.com/go-logr/logr v1.2.3
-	github.com/gofiber/adaptor/v2 v2.1.25
-	github.com/gofiber/fiber/v2 v2.38.1
+	github.com/gofiber/adaptor/v2 v2.1.29
+	github.com/gofiber/fiber/v2 v2.39.0
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/helm/chart-releaser v1.4.1
@@ -164,9 +164,9 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/maratori/testpackage v1.0.1 // indirect
 	github.com/matoous/godox v0.0.0-20210227103229-6504466cf951 // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mbilski/exhaustivestruct v1.2.0 // indirect
 	github.com/mgechev/dots v0.0.0-20210922191527-e955255bf517 // indirect
