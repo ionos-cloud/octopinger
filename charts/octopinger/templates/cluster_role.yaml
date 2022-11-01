@@ -1,7 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: octopinger-controller
+  name: {{ template "octopinger.controller.fullname" . }}
+  labels:
+    {{- include "octopinger.labels" (dict "context" . "component" .Values.controller.name "name" .Values.controller.name) | nindent 4 }}
 rules:
 - apiGroups:
   - '*'

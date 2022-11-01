@@ -1,18 +1,26 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: octopinger-controller
+  name: {{ template "octopinger.controller.fullname" . }}
 spec:
-  replicas: 1
+  revisionHistoryLimit: 5
+  replicas: {{ .Values.controller.replicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: octopinger-controller
-  serviceName: octopinger-controller
+      {{- include "octopinger.selectorLabels" (dict "context" . "name" .Values.controller.name) | nindent 6 }}
+  serviceName: {{ template "octopinger.controller.fullname" . }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: octopinger-controller
+        {{- include "octopinger.labels" (dict "context" . "component" .Values.controller.name "name" .Values.controller.name) | nindent 8 }}
+        {{- with (mergeOverwrite (deepCopy .Values.global.podLabels) .Values.controller.podLabels) }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      {{- with .Values.controller.imagePullSecrets | default .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -31,21 +39,64 @@ spec:
       containers:
       - command:
         - /main
-        image: ghcr.io/ionos-cloud/octopinger/operator:v0.0.33
-        name: operator
+        image: {{ default .Values.global.image.repository .Values.controller.image.repository }}:{{ default (include "octopinger.defaultTag" .) .Values.controller.image.tag }}
         securityContext:
           allowPrivilegeEscalation: false
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 15
-          periodSeconds: 20
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.controller.containerPort }}
+          protocol: TCP
         readinessProbe:
           httpGet:
-            path: /readyz
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 10
+            path: /health
+            port: metrics
+          initialDelaySeconds: {{ .Values.controller.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.controller.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.controller.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.controller.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.controller.readinessProbe.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: metrics
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.controller.image.imagePullPolicy }}
+        name: {{ .Values.controller.name }}
+        env:
+          {{- with .Values.controller.env }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- with .Values.controller.envFrom }}
+        envFrom:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.controller.resources | nindent 10 }}
+        volumeMounts:
+        {{- with .Values.controller.volumeMounts }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
       terminationGracePeriodSeconds: 10
       serviceAccountName: octopinger-controller
+
+      volumes:
+      {{- with .Values.controller.volumes }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.controller.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.controller.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}

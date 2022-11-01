@@ -45,7 +45,7 @@ Common labels
 helm.sh/chart: {{ include "octopinger.chart" .context }}
 {{ include "octopinger.selectorLabels" (dict "context" .context "component" .component "name" .name) }}
 app.kubernetes.io/managed-by: {{ .context.Release.Service }}
-app.kubernetes.io/part-of: argocd
+app.kubernetes.io/part-of: octopinger
 {{- with .context.Values.global.additionalLabels }}
 {{ toYaml . }}
 {{- end }}
