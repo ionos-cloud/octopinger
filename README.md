@@ -1,6 +1,6 @@
 # :octopus: Octopinger
 
-[![Test & Build](https://github.com/ionos-cloud/octopinger/actions/workflows/main.yml/badge.svg)](https://github.com/ionos-cloud/octopinger/actions/workflows/main.yml)
+[![Release](https://github.com/ionos-cloud/octopinger/actions/workflows/release.yml/badge.svg)](https://github.com/ionos-cloud/octopinger/actions/workflows/release.yml)
 [![Taylor Swift](https://img.shields.io/badge/secured%20by-taylor%20swift-brightgreen.svg)](https://twitter.com/SwiftOnSecurity)
 [![Volkswagen](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/auchenberg/volkswagen)
 
