@@ -2,6 +2,27 @@ apiVersion: v1
 entries:
   octopinger:
   - apiVersion: v2
+    appVersion: v0.1.2
+    created: "2022-11-03T12:05:00.088857916Z"
+    description: A Helm chart for Octopinger, a declarative, Kubernetes Operator to
+      monitor the connectivity of your cluster.
+    digest: 22da7842235068e10ec8f20971783bd99f7abd129b5cde6fd9f7bcab1de795c9
+    home: https://github.com/ionos-cloud/octopinger
+    keywords:
+    - octopinger
+    - observability
+    kubeVersion: '>=1.22.0-0'
+    maintainers:
+    - name: Sebastian Doell
+      url: https://github.com/katallaxie
+    name: octopinger
+    sources:
+    - https://github.com/ionos-cloud/octopinger/tree/main/charts/octopinger
+    - https://github.com/ionos-cloud/octopinger
+    urls:
+    - https://github.com/ionos-cloud/octopinger/releases/download/octopinger-chart-0.1.2/octopinger-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: v0.1.1
     created: "2022-11-03T11:47:03.187488085Z"
     description: A Helm chart for Octopinger, a declarative, Kubernetes Operator to
@@ -106,4 +127,4 @@ entries:
     urls:
     - https://github.com/ionos-cloud/octopinger/releases/download/octopinger-chart-0.1.0-alpha.1/octopinger-0.1.0-alpha.1.tgz
     version: 0.1.0-alpha.1
-generated: "2022-11-03T11:47:03.187512786Z"
+generated: "2022-11-03T12:05:00.088881816Z"
