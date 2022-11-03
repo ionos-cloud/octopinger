@@ -237,10 +237,10 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 		},
 	}
 
-	log.Info(fmt.Sprintf("checking for %s in %s", octopinger.Namespace, octopinger.Name+"-daemonset"))
+	log.Info(fmt.Sprintf("checking for %s in %s", octopinger.Name+"-daemonset", octopinger.Namespace))
 
 	existingDS := &appsv1.DaemonSet{}
-	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", configMap) {
+	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", existingDS) {
 		if !reflect.DeepEqual(existingDS, ds) {
 			log.Info(fmt.Sprintf("updating %s", octopinger.Name+"-daemonset"))
 

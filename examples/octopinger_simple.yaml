@@ -10,4 +10,4 @@ spec:
     dns:
       enable: false
   template:
-    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.0
+    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.2
