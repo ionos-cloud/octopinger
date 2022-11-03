@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
 	"github.com/ionos-cloud/octopinger/pkg/utils"
@@ -224,21 +225,21 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 		},
 	}
 
+	err = controllerutil.SetControllerReference(octopinger, ds, d.scheme)
+	if err != nil {
+		return err
+	}
+
 	log.Info(fmt.Sprintf("checking for %s in %s", octopinger.Name+"-daemonset", octopinger.Namespace))
 
 	existingDS := &appsv1.DaemonSet{}
 	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", existingDS) {
-		// if !reflect.DeepEqual(existingDS, ds) {
-		// 	existingDS = ds
-		// 	return d.Update(ctx, existingDS)
-		// }
+		if !reflect.DeepEqual(existingDS, ds) {
+			existingDS = ds
+			return d.Update(ctx, existingDS)
+		}
 
 		return nil
-	}
-
-	err = controllerutil.SetControllerReference(octopinger, ds, d.scheme)
-	if err != nil {
-		return err
 	}
 
 	log.Info(fmt.Sprintf("creating %s", octopinger.Name+"-daemonset"))
