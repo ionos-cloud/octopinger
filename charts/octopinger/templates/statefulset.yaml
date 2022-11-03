@@ -44,12 +44,15 @@ spec:
           allowPrivilegeEscalation: false
         ports:
         - name: metrics
+          containerPort: {{ .Values.controller.metrics.metricsPort }}
+          protocol: TCP
+        - name: health
           containerPort: {{ .Values.controller.containerPort }}
           protocol: TCP
         readinessProbe:
           httpGet:
-            path: /health
-            port: metrics
+            path: /readyz
+            port: health
           initialDelaySeconds: {{ .Values.controller.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.controller.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.controller.readinessProbe.timeoutSeconds }}
@@ -57,8 +60,8 @@ spec:
           failureThreshold: {{ .Values.controller.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
-            path: /
-            port: metrics
+            path: /livez
+            port: health
           initialDelaySeconds: 15
           periodSeconds: 20
         imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.controller.image.imagePullPolicy }}
