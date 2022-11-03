@@ -54,11 +54,65 @@ type Metrics struct {
 	probePacketLossMean *prometheus.GaugeVec
 	probeNodesTotal     *prometheus.GaugeVec
 	probeNodesReports   *prometheus.GaugeVec
+	probeDNSTotal       *prometheus.GaugeVec
+	probeDNSSuccess     *prometheus.GaugeVec
+	probeDNSFailure     *prometheus.GaugeVec
+	probeDNSError       *prometheus.GaugeVec
 }
 
 // NewMetrics ...
 func NewMetrics() *Metrics {
 	m := new(Metrics)
+
+	m.probeDNSTotal = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_dns_total",
+			Help: "Total number of DNS records to probe.",
+		},
+		[]string{
+			"octopinger_node",
+		},
+	)
+
+	m.probeDNSSuccess = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_dns_success",
+			Help: "Number of successful probed DNS records.",
+		},
+		[]string{
+			"octopinger_node",
+		},
+	)
+
+	m.probeDNSError = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_dns_error",
+			Help: "Number of errored probed DNS records.",
+		},
+		[]string{
+			"octopinger_node",
+		},
+	)
+
+	m.probeDNSFailure = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_dns_failure",
+			Help: "Number of failed probed DNS records.",
+		},
+		[]string{
+			"octopinger_node",
+		},
+	)
+
+	m.probeDNSError = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_dns_success",
+			Help: "Total number of DNS records to probe.",
+		},
+		[]string{
+			"octopinger_node",
+		},
+	)
 
 	m.probeNodesTotal = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -173,6 +227,9 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probeNodesTotal.Collect(ch)
 	m.probeNodesReports.Collect(ch)
 	m.probeHealthGauge.Collect(ch)
+	m.probeDNSTotal.Collect(ch)
+	m.probeDNSSuccess.Collect(ch)
+	m.probeDNSError.Collect(ch)
 }
 
 // Describe ...
@@ -186,6 +243,9 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probeNodesTotal.Describe(ch)
 	m.probeNodesReports.Describe(ch)
 	m.probeHealthGauge.Describe(ch)
+	m.probeDNSTotal.Describe(ch)
+	m.probeDNSSuccess.Describe(ch)
+	m.probeDNSError.Describe(ch)
 }
 
 // Monitor ...
@@ -273,4 +333,24 @@ func (m *Monitor) SetProbePacketLossMax(instance, probe string, percentage float
 // SetProbePacketLossMean ...
 func (m *Monitor) SetProbePacketLossMean(instance, probe string, percentage float64) {
 	m.metrics.probePacketLossMax.WithLabelValues(instance, probe).Set(percentage)
+}
+
+// SetProbeDNSTotal ...
+func (m *Monitor) SetProbeDNSTotal(instance string, float float64) {
+	m.metrics.probeDNSTotal.WithLabelValues(instance).Set(float)
+}
+
+// SetProbeDNSError ...
+func (m *Monitor) SetProbeDNSError(instance string, float float64) {
+	m.metrics.probeDNSError.WithLabelValues(instance).Set(float)
+}
+
+// SetProbeDNSSuccess ...
+func (m *Monitor) SetProbeDNSSuccess(instance string, float float64) {
+	m.metrics.probeDNSSuccess.WithLabelValues(instance).Set(float)
+}
+
+// SetProbeDNSFailure ...
+func (m *Monitor) SetProbeDNSFailure(instance string, float float64) {
+	m.metrics.probeDNSFailure.WithLabelValues(instance).Set(float)
 }

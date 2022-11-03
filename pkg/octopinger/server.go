@@ -113,6 +113,10 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			run(NewICMPProbe(s.opts.nodeName, opts...).Do(ctx, s.opts.monitor))
 		}
 
+		if cfg.DNS.Enable && len(cfg.DNS.Names) > 0 {
+			run(NewDNSProbe(s.opts.nodeName, cfg.DNS.Names...).Do(ctx, s.opts.monitor))
+		}
+
 		<-ctx.Done()
 
 		return nil

@@ -402,39 +402,3 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 		}
 	}
 }
-
-type dnsProbe struct {
-	opts     *Opts
-	nodeName string
-	name     string
-}
-
-// NewDnsProbe ...
-func NewDnsProbe(nodeName string, opts ...Opt) *dnsProbe {
-	options := new(Opts)
-	options.Configure(opts...)
-
-	d := new(dnsProbe)
-	d.opts = options
-	d.nodeName = nodeName
-	d.name = "dns"
-
-	return d
-}
-
-// Do ...
-func (d *dnsProbe) Do(ctx context.Context, metrics Gatherer) func() error {
-	return func() error {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-			case <-ticker.C:
-
-				continue
-			}
-		}
-	}
-}
