@@ -143,7 +143,10 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 	}
 
 	configMapData := NewConfigMapData()
-	configMapData.SetConfig(&octopinger.Spec.Config)
+	err = configMapData.SetConfig(&octopinger.Spec.Config)
+	if err != nil {
+		return err
+	}
 
 	ds := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -255,7 +258,10 @@ func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *
 	}
 
 	configMapData := NewConfigMapData()
-	configMapData.SetConfig(&octopinger.Spec.Config)
+	err := configMapData.SetConfig(&octopinger.Spec.Config)
+	if err != nil {
+		return err
+	}
 
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -265,7 +271,7 @@ func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *
 		Data: configMapData,
 	}
 
-	err := controllerutil.SetControllerReference(octopinger, configMap, d.scheme)
+	err = controllerutil.SetControllerReference(octopinger, configMap, d.scheme)
 	if err != nil {
 		return err
 	}
