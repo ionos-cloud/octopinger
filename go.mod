@@ -17,7 +17,6 @@ require (
 	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.21.0
-	golang.org/x/exp v0.0.0-20221023144134-a1e5550cf13e
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	helm.sh/helm v2.17.0+incompatible
 	k8s.io/api v0.25.3
