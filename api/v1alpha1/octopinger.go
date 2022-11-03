@@ -1,11 +1,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -40,9 +35,18 @@ type Octopinger struct {
 // OctopingerSpec defines the desired state of Octopinger
 // +k8s:openapi-gen=true
 type OctopingerSpec struct {
-	// Label is the value of the 'octopinger=' label to set on a node that should run octopinger.
+	// Label is the value of the 'octopinger=' label to set on a node that should run Octopinger.
 	Label string `json:"label"`
 
+	// Config is a wrapper to contain the configuration for Octopinger.
+	Config Config `json:"config"`
+
+	// Template specifies the options for the DaemonSet template.
+	Template Template `json:"template"`
+}
+
+// Config is a wrapper to contain the configuration of Octopinger.
+type Config struct {
 	// ICMP is the configuration for the ICMP probe.
 	ICMP ICMP `json:"icmp"`
 
@@ -85,60 +89,6 @@ type Template struct {
 
 	// Tolerations ...
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
-}
-
-// Probes ...
-type Probes []Probe
-
-// ConfigMap ...
-func (p Probes) ConfigMap() map[string]string {
-	cfg := make(map[string]string)
-
-	for _, probe := range p {
-		maps.Copy(cfg, probe.ConfigMap())
-	}
-
-	delete(cfg, "")
-
-	return cfg
-}
-
-// ConfigMap ...
-func (p Probe) ConfigMap() map[string]string {
-	cfg := map[string]string{
-		fmt.Sprintf("probes.%s.enabled", p.Type):    strconv.FormatBool(p.Enabled),
-		fmt.Sprintf("probes.%s.properties", p.Type): p.Properties.KeyValues(),
-	}
-
-	return cfg
-}
-
-// Properties ...
-type Properties map[string]string
-
-// KeyValues ...
-func (p Properties) KeyValues() string {
-	var lines []string
-	for k, v := range p {
-		lines = append(lines, fmt.Sprintf("%s:%v", k, v))
-	}
-
-	return strings.Join(lines, "\n")
-}
-
-// Probe ...
-type Probe struct {
-	// Name ...
-	Name string `json:"name"`
-
-	// Type ...
-	Type string `json:"type"`
-
-	// Enabled ...
-	Enabled bool `json:"enabled"`
-
-	// Properties ...
-	Properties Properties `json:"properties,omitempty"`
 }
 
 //+kubebuilder:object:root=true

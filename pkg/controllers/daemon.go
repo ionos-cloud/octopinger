@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
@@ -21,6 +22,41 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
+
+// NewConfigMapData ..
+func NewConfigMapData() ConfigMapData {
+	return ConfigMapData{"nodes": "", "config": "{}"}
+}
+
+// ConfigMapData ...
+type ConfigMapData map[string]string
+
+// SetConfig ...
+func (c ConfigMapData) SetConfig(cfg *v1alpha1.Config) error {
+	bb, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	c["config"] = string(bb)
+
+	return nil
+}
+
+// KeyPaths ...
+func (c ConfigMapData) KeyPaths() []corev1.KeyToPath {
+	items := []corev1.KeyToPath{}
+	for k := range c {
+		items = append(items, corev1.KeyToPath{Key: k, Path: k})
+	}
+
+	return items
+}
+
+// SetNodes ...
+func (c *ConfigMapData) SetNodes() error {
+	return nil
+}
 
 // NewDaemonReconciler ...
 func NewDaemonReconciler(mgr manager.Manager) error {
@@ -106,13 +142,8 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 		return err
 	}
 
-	cfg := octopinger.Spec.Probes.ConfigMap()
-	cfg["nodes"] = ""
-
-	items := []corev1.KeyToPath{}
-	for k := range cfg {
-		items = append(items, corev1.KeyToPath{Key: k, Path: k})
-	}
+	configMapData := NewConfigMapData()
+	configMapData.SetConfig(&octopinger.Spec.Config)
 
 	ds := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -138,7 +169,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 						{
 							Name:            "octopinger-container",
 							ImagePullPolicy: corev1.PullAlways,
-							Image:           octopinger.Spec.Image,
+							Image:           octopinger.Spec.Template.Image,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "config-vol",
@@ -180,7 +211,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 							},
 						},
 					},
-					Tolerations: octopinger.Spec.Tolerations,
+					Tolerations: octopinger.Spec.Template.Tolerations,
 					Volumes: []corev1.Volume{
 						{
 							Name: "config-vol",
@@ -189,7 +220,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 									LocalObjectReference: corev1.LocalObjectReference{
 										Name: octopinger.Name + "-config",
 									},
-									Items: items,
+									Items: configMapData.KeyPaths(),
 								},
 							},
 						},
@@ -223,15 +254,15 @@ func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *
 		return nil
 	}
 
-	cfg := octopinger.Spec.Probes.ConfigMap()
-	cfg["nodes"] = ""
+	configMapData := NewConfigMapData()
+	configMapData.SetConfig(&octopinger.Spec.Config)
 
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      octopinger.Name + "-config",
 			Namespace: octopinger.Namespace,
 		},
-		Data: cfg,
+		Data: configMapData,
 	}
 
 	err := controllerutil.SetControllerReference(octopinger, configMap, d.scheme)

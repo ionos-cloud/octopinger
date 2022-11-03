@@ -97,7 +97,7 @@ func NewServer(opts ...Opt) *server {
 // Start ...
 func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc) func() error {
 	return func() error {
-		cfg, err := Config{}.Load(s.opts.configPath)
+		cfg, err := Config().Load(s.opts.configPath)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			WithPodIP(s.opts.podIP),
 		}
 
-		if cfg.ICMP.Enabled {
+		if cfg.ICMP.Enable {
 			run(NewICMPProbe(s.opts.nodeName, opts...).Do(ctx, s.opts.monitor))
 		}
 

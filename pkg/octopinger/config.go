@@ -2,14 +2,11 @@ package octopinger
 
 import (
 	"bufio"
-	"log"
+	"encoding/json"
 	"os"
 	"path"
-	"strings"
-	"time"
 
-	"github.com/katallaxie/pkg/utils/files"
-	"golang.org/x/exp/maps"
+	"github.com/ionos-cloud/octopinger/api/v1alpha1"
 )
 
 // NodeFilter ...
@@ -86,86 +83,26 @@ func NewNodeList(loaders []NodeLoader, filters ...NodeFilter) *NodeList {
 	return n
 }
 
+type config struct{}
+
 // Config ...
-type Config struct {
-	ICMP ICMPConfig
-}
-
-// ICMPConfig ...
-type ICMPConfig struct {
-	Enabled  bool
-	Timeout  time.Duration
-	Interval time.Duration
-	External []string
+func Config() config {
+	return config{}
 }
 
 // Load ...
-func (c ICMPConfig) Load(base string) (ICMPConfig, error) {
-	exists, _ := files.FileExists(path.Join(base, "probes.icmp.enabled"))
-	if !exists {
-		return ICMPConfig{Enabled: false}, nil
-	}
+func (c config) Load(base string) (*v1alpha1.Config, error) {
+	p := path.Clean(path.Join(base, "config"))
 
-	defaults := map[string]string{
-		"timeout":  "1m",
-		"interval": "3s",
-		"external": "",
-	}
-
-	cfg, err := loadKeyValues(base, "probes.icmp.properties")
+	file, err := os.ReadFile(p)
 	if err != nil {
-		return ICMPConfig{}, err
+		return nil, err
 	}
 
-	maps.Copy(defaults, cfg)
-
-	timeout, err := time.ParseDuration(defaults["timeout"])
+	cfg := &v1alpha1.Config{}
+	err = json.Unmarshal(file, cfg)
 	if err != nil {
-		return ICMPConfig{}, err
-	}
-
-	interval, err := time.ParseDuration(defaults["interval"])
-	if err != nil {
-		return ICMPConfig{}, err
-	}
-
-	return ICMPConfig{
-		Enabled:  true,
-		Interval: interval,
-		Timeout:  timeout,
-	}, nil
-}
-
-// Load ...
-func (c Config) Load(base string) (Config, error) {
-	icmpCfg, err := ICMPConfig{}.Load(base)
-	if err != nil {
-		return Config{}, nil
-	}
-
-	return Config{
-		ICMP: icmpCfg,
-	}, nil
-}
-
-func loadKeyValues(base, file string) (map[string]string, error) {
-	cfg := make(map[string]string)
-
-	f, err := os.Open(path.Join(base, file))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-
-	for scanner.Scan() {
-		parts := strings.Split(scanner.Text(), "=")
-		if len(parts) < 2 {
-			continue
-		}
-
-		cfg[parts[0]] = parts[1]
+		return nil, err
 	}
 
 	return cfg, nil
