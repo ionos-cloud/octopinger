@@ -1,11 +1,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -19,7 +14,7 @@ func init() {
 }
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-// Important: Run "make" to regenerate code after modifying this file
+// Important: Run "make generate" or "go generate ./..." to regenerate code after modifying this file
 
 //+kubebuilder:object:root=true
 
@@ -40,68 +35,60 @@ type Octopinger struct {
 // OctopingerSpec defines the desired state of Octopinger
 // +k8s:openapi-gen=true
 type OctopingerSpec struct {
-	// Label is the value of the 'octopinger=' label to set on a node that should run octopinger.
+	// Label is the value of the 'octopinger=' label to set on a node that should run Octopinger.
 	Label string `json:"label"`
 
+	// Config is a wrapper to contain the configuration for Octopinger.
+	Config Config `json:"config"`
+
+	// Template specifies the options for the DaemonSet template.
+	Template Template `json:"template"`
+}
+
+// Config is a wrapper to contain the configuration of Octopinger.
+type Config struct {
+	// ICMP is the configuration for the ICMP probe.
+	ICMP ICMP `json:"icmp"`
+
+	// DNS is the configuration for the DNS probe.
+	DNS DNS `json:"dns"`
+}
+
+// DNS configures this probe.
+type DNS struct {
+	// Enable is turning the DNS probe of for Octopinger.
+	Enable bool `json:"enable"`
+	// Names contains the list of domain names to query.
+	Names []string `json:"names,omitempty"`
+	// Types specifies the type of domain name records to query. By default this is A records.
+	Types []string `json:"types,omitempty"`
+	// Servers contains a list of domain name servers to use for the probe. By default the configured DNS servers are used.
+	Servers []string `json:"servers,omitempty"`
+	// Timeout the time to wait for the probe to succeed. The default is "1m" (1 minute).
+	Timeout string `json:"timeout,omitempty"`
+}
+
+// ICMP configures this probe.
+type ICMP struct {
+	// Enable is turning the ICMP probe on for Octopinger. By default all nodes are probed.
+	Enable bool `json:"enable"`
+	// ExcludeNodes allows to exclude specific nodes from probing.
+	ExcludeNodes []string `json:"exclude_nodes,omitempty"`
+	// AdditionalTargets this is a list of additional targets to probe via ICMP.
+	AdditionalTargets []string ` json:"additional_targets,omitempty"`
+	// Timeout the time to wait for the probe to succeed. The default is "1m" (1 minute).
+	Timeout string `json:"timeout,omitempty"`
+	// TTL is the time to live for the ICMP packet.
+	TTL string `json:"ttl,omitempty"`
+}
+
+// Template ...
+type Template struct {
 	// Image is the Docker image to run for octopinger.
 	Image string `json:"image"`
 
-	// Probes ...
-	Probes Probes `json:"probes"`
-
 	// Tolerations ...
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
-}
-
-// Probes ...
-type Probes []Probe
-
-// ConfigMap ...
-func (p Probes) ConfigMap() map[string]string {
-	cfg := make(map[string]string)
-
-	for _, probe := range p {
-		maps.Copy(cfg, probe.ConfigMap())
-	}
-
-	delete(cfg, "")
-
-	return cfg
-}
-
-// ConfigMap ...
-func (p Probe) ConfigMap() map[string]string {
-	cfg := map[string]string{
-		fmt.Sprintf("probes.%s.enabled", p.Type):    strconv.FormatBool(p.Enabled),
-		fmt.Sprintf("probes.%s.properties", p.Type): p.Properties.KeyValues(),
-	}
-
-	return cfg
-}
-
-// Properties ...
-type Properties map[string]string
-
-// KeyValues ...
-func (p Properties) KeyValues() string {
-	var lines []string
-	for k, v := range p {
-		lines = append(lines, fmt.Sprintf("%s:%v", k, v))
-	}
-
-	return strings.Join(lines, "\n")
-}
-
-// Probe ...
-type Probe struct {
-	// Type ...
-	Type string `json:"type"`
-
-	// Enabled ...
-	Enabled bool `json:"enabled"`
-
-	// Properties ...
-	Properties Properties `json:"properties"`
 }
 
 //+kubebuilder:object:root=true
@@ -129,7 +116,7 @@ type OctopingerStatus struct {
 	Phase OctopingerPhase `json:"phase"`
 
 	// ControlPaused indicates the operator pauses the control of
-	// octopinger.
+	// Octopinger.
 	ControlPaused bool `json:"controlPaused,omitempty"`
 }
 

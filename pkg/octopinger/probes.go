@@ -15,47 +15,6 @@ type Collector interface {
 	Collect(ch chan<- Metric)
 }
 
-type statistics struct {
-	maxRtt       *maxRtt
-	minRtt       *minRtt
-	meanRtt      *meanRtt
-	totalNumber  *totalNumber
-	reportNumber *reportNumber
-	packetLoss   *packetLoss
-
-	Collector
-	sync.RWMutex
-}
-
-// Collect ...
-func (s *statistics) Collect(ch chan<- Metric) {
-	s.maxRtt.Collect(ch)
-	s.minRtt.Collect(ch)
-	s.meanRtt.Collect(ch)
-	s.totalNumber.Collect(ch)
-	s.reportNumber.Collect(ch)
-	s.packetLoss.Collect(ch)
-}
-
-// NewStatistics ...
-func NewStatistics(probeName, nodeName string) *statistics {
-	s := new(statistics)
-
-	s.maxRtt = NewMaxRtt(probeName, nodeName)
-	s.minRtt = NewMinRtt(probeName, nodeName)
-	s.meanRtt = NewMeanRtt(probeName, nodeName)
-	s.totalNumber = NewTotalNumber(probeName, nodeName)
-	s.reportNumber = NewReportNumber(probeName, nodeName)
-	s.packetLoss = NewPacketLoss(probeName, nodeName)
-
-	return s
-}
-
-// Reset ...
-func (s *statistics) Reset() {
-
-}
-
 type maxRtt struct {
 	values []float64
 
@@ -241,51 +200,51 @@ func NewPacketLoss(probeName, nodeName string) *packetLoss {
 }
 
 // AddMaxRtt ...
-func (s *statistics) AddMaxRtt(value float64) {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) AddMaxRtt(value float64) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.maxRtt.values = append(s.maxRtt.values, value)
+	i.maxRtt.values = append(i.maxRtt.values, value)
 }
 
 // AddMinRtt ...
-func (s *statistics) AddMinRtt(value float64) {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) AddMinRtt(value float64) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.minRtt.values = append(s.minRtt.values, value)
+	i.minRtt.values = append(i.minRtt.values, value)
 }
 
 // AddMeanRtt ...
-func (s *statistics) AddMeanRtt(value float64) {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) AddMeanRtt(value float64) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.meanRtt.values = append(s.meanRtt.values, value)
+	i.meanRtt.values = append(i.meanRtt.values, value)
 }
 
 // AddPacketLoss ...
-func (s *statistics) AddPacketLoss(value float64) {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) AddPacketLoss(value float64) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.packetLoss.values = append(s.packetLoss.values, value)
+	i.packetLoss.values = append(i.packetLoss.values, value)
 }
 
 // SetTotalNumber ...
-func (s *statistics) SetTotalNumber(value float64) {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) SetTotalNumber(value float64) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.totalNumber.value = value
+	i.totalNumber.value = value
 }
 
 // IncReportNumber ...
-func (s *statistics) IncReportNumber() {
-	s.Lock()
-	defer s.Unlock()
+func (i *icmpProbe) IncReportNumber() {
+	i.Lock()
+	defer i.Unlock()
 
-	s.reportNumber.value += 1
+	i.reportNumber.value += 1
 }
 
 // Collect ...
@@ -337,6 +296,16 @@ type icmpProbe struct {
 
 	name     string
 	nodeName string
+
+	maxRtt       *maxRtt
+	minRtt       *minRtt
+	meanRtt      *meanRtt
+	totalNumber  *totalNumber
+	reportNumber *reportNumber
+	packetLoss   *packetLoss
+
+	Collector
+	sync.RWMutex
 }
 
 // NewICMPProbe ...
@@ -349,12 +318,34 @@ func NewICMPProbe(nodeName string, opts ...Opt) *icmpProbe {
 	p.nodeName = nodeName
 	p.name = "icmp"
 
+	p.Reset()
+
 	return p
 }
 
 // Name ...
 func (p *icmpProbe) Name() string {
 	return p.name
+}
+
+// Reset ...
+func (p *icmpProbe) Reset() {
+	p.maxRtt = NewMaxRtt(p.name, p.nodeName)
+	p.meanRtt = NewMeanRtt(p.name, p.nodeName)
+	p.minRtt = NewMinRtt(p.name, p.nodeName)
+	p.packetLoss = NewPacketLoss(p.name, p.nodeName)
+	p.reportNumber = NewReportNumber(p.name, p.nodeName)
+	p.totalNumber = NewTotalNumber(p.name, p.nodeName)
+}
+
+// Collect ...
+func (i *icmpProbe) Collect(ch chan<- Metric) {
+	i.maxRtt.Collect(ch)
+	i.meanRtt.Collect(ch)
+	i.minRtt.Collect(ch)
+	i.packetLoss.Collect(ch)
+	i.reportNumber.Collect(ch)
+	i.totalNumber.Collect(ch)
 }
 
 // Do ...
@@ -387,8 +378,8 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				opt.PingCount = 5
 				opt.PingTimeout = 5 * time.Second
 
-				statistics := NewStatistics(i.name, i.nodeName)
-				statistics.SetTotalNumber(float64(len(nodes)))
+				i.Reset()
+				i.SetTotalNumber(float64(len(nodes)))
 
 				stats, err := pinger.ICMPPing(&opt, nodes...)
 				if err != nil {
@@ -396,15 +387,51 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				}
 
 				for _, stat := range stats {
-					statistics.IncReportNumber()
-					statistics.AddMaxRtt(float64(stat.Worst.Microseconds()))
-					statistics.AddMinRtt(float64(stat.Best.Microseconds()))
-					statistics.AddMeanRtt(float64(stat.Mean.Microseconds()))
-					statistics.AddPacketLoss(float64(stat.PktLossRate))
+					i.IncReportNumber()
+					i.AddMaxRtt(float64(stat.Worst.Microseconds()))
+					i.AddMinRtt(float64(stat.Best.Microseconds()))
+					i.AddMeanRtt(float64(stat.Mean.Microseconds()))
+					i.AddPacketLoss(float64(stat.PktLossRate))
 				}
 
-				metrics.Gather(statistics)
+				metrics.Gather(i)
 				ticker.Reset(1 * time.Second)
+
+				continue
+			}
+		}
+	}
+}
+
+type dnsProbe struct {
+	opts     *Opts
+	nodeName string
+	name     string
+}
+
+// NewDnsProbe ...
+func NewDnsProbe(nodeName string, opts ...Opt) *dnsProbe {
+	options := new(Opts)
+	options.Configure(opts...)
+
+	d := new(dnsProbe)
+	d.opts = options
+	d.nodeName = nodeName
+	d.name = "dns"
+
+	return d
+}
+
+// Do ...
+func (d *dnsProbe) Do(ctx context.Context, metrics Gatherer) func() error {
+	return func() error {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+			case <-ticker.C:
 
 				continue
 			}

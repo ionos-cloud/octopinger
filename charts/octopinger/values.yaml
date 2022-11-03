@@ -27,7 +27,7 @@ global:
   # Default image used by all components
   image:
     # -- If defined, a repository applied to all Octopinger deployments
-    repository: ghcr.io/ionos-cloud/octopinger/octopinger
+    repository: ghcr.io/ionos-cloud/octopinger/operator
     # -- Overrides the global Octopinger image tag whose default is the chart appVersion
     tag: ""
     # -- If defined, a imagePullPolicy applied to all Octopinger deployments
