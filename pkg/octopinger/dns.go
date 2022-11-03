@@ -70,6 +70,11 @@ func (d *dnsFailed) Write(monitor *Monitor) error {
 	return nil
 }
 
+// Collect ...
+func (d *dnsFailed) Collect(ch chan<- Metric) {
+	ch <- d
+}
+
 // NewDNSFailed ...
 func NewDNSFailed(nodeName string) *dnsFailed {
 	return &dnsFailed{
@@ -90,6 +95,11 @@ func (d *dnsSuccess) Write(monitor *Monitor) error {
 	monitor.SetProbeDNSSuccess(d.nodeName, d.value)
 
 	return nil
+}
+
+// Collect ...
+func (d *dnsSuccess) Collect(ch chan<- Metric) {
+	ch <- d
 }
 
 // NewDNSSuccess ...
@@ -114,6 +124,11 @@ func (d *dnsError) Write(monitor *Monitor) error {
 	return nil
 }
 
+// Collect ...
+func (d *dnsError) Collect(ch chan<- Metric) {
+	ch <- d
+}
+
 // NewDNSError ...
 func NewDNSError(nodeName string) *dnsError {
 	return &dnsError{
@@ -134,6 +149,11 @@ func (d *dnsTotal) Write(monitor *Monitor) error {
 	monitor.SetProbeDNSTotal(d.nodeName, d.value)
 
 	return nil
+}
+
+// Collect ...
+func (d *dnsTotal) Collect(ch chan<- Metric) {
+	ch <- d
 }
 
 // NewDNSTotal ...
