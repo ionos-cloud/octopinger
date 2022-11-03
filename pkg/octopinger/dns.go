@@ -28,13 +28,15 @@ type dnsProbe struct {
 
 // NewDNSProbe ...
 func NewDNSProbe(nodeName string, names ...string) *dnsProbe {
-	r := new(dnsProbe)
-	r.nodeName = nodeName
-	r.names = names
-	r.maxConcurrency = 100
-	r.sem = make(chan token, r.maxConcurrency)
+	d := new(dnsProbe)
+	d.nodeName = nodeName
+	d.names = names
+	d.maxConcurrency = 100
+	d.sem = make(chan token, d.maxConcurrency)
 
-	return r
+	d.Reset()
+
+	return d
 }
 
 // Reset ...
