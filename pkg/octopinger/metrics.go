@@ -104,16 +104,6 @@ func NewMetrics() *Metrics {
 		},
 	)
 
-	m.probeDNSError = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "octopinger_probe_dns_success",
-			Help: "Total number of DNS records to probe.",
-		},
-		[]string{
-			"octopinger_node",
-		},
-	)
-
 	m.probeNodesTotal = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_nodes_total",
