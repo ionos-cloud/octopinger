@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 
 	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
 	"github.com/ionos-cloud/octopinger/pkg/utils"
@@ -42,16 +41,6 @@ func (c ConfigMapData) SetConfig(cfg *v1alpha1.Config) error {
 	c["config"] = string(bb)
 
 	return nil
-}
-
-// KeyPaths ...
-func (c ConfigMapData) KeyPaths() []corev1.KeyToPath {
-	items := []corev1.KeyToPath{}
-	for k := range c {
-		items = append(items, corev1.KeyToPath{Key: k, Path: k})
-	}
-
-	return items
 }
 
 // SetNodes ...
@@ -140,16 +129,14 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 	log.Info("Reconciling Octopinger")
 
 	configMap := &corev1.ConfigMap{}
-
 	err := utils.FetchObject(ctx, d, octopinger.Namespace, octopinger.Name+"-config", configMap)
 	if err != nil {
 		return err
 	}
 
-	configMapData := NewConfigMapData()
-	err = configMapData.SetConfig(&octopinger.Spec.Config)
-	if err != nil {
-		return err
+	items := []corev1.KeyToPath{}
+	for k := range configMap.Data {
+		items = append(items, corev1.KeyToPath{Key: k, Path: k})
 	}
 
 	ds := &appsv1.DaemonSet{
@@ -227,7 +214,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 									LocalObjectReference: corev1.LocalObjectReference{
 										Name: octopinger.Name + "-config",
 									},
-									Items: configMapData.KeyPaths(),
+									Items: items,
 								},
 							},
 						},
@@ -241,12 +228,10 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 
 	existingDS := &appsv1.DaemonSet{}
 	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", existingDS) {
-		if !reflect.DeepEqual(existingDS, ds) {
-			log.Info(fmt.Sprintf("updating %s", octopinger.Name+"-daemonset"))
-
-			existingDS = ds
-			return d.Update(ctx, existingDS)
-		}
+		// if !reflect.DeepEqual(existingDS, ds) {
+		// 	existingDS = ds
+		// 	return d.Update(ctx, existingDS)
+		// }
 
 		return nil
 	}
@@ -262,6 +247,9 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 }
 
 func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
+	log := ctrl.LoggerFrom(ctx)
+	log.Info("reconciling config map")
+
 	configMap := &corev1.ConfigMap{}
 	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-config", configMap) {
 		return nil
