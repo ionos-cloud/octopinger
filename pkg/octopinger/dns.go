@@ -252,4 +252,6 @@ func (d *dnsProbe) resolve(ctx context.Context, names ...string) {
 			<-d.sem
 		}()
 	}
+
+	d.wg.Wait()
 }
