@@ -33,7 +33,7 @@ type ConfigMapData map[string]string
 
 // SetConfig ...
 func (c ConfigMapData) SetConfig(cfg *v1alpha1.Config) error {
-	bb, err := json.Marshal(c)
+	bb, err := json.Marshal(cfg)
 	if err != nil {
 		return err
 	}

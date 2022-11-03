@@ -3,15 +3,11 @@ kind: Octopinger
 metadata:
   name: demo
 spec:
-  image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.0.36
   label: octopinger
-  tolerations:
-  - key: "example-key"
-    operator: "Exists"
-    effect: "NoSchedule"
-  probes:
-    - type: icmp
-      enabled: true
-      properties:
-        timeout: 1m
-        interval: 1m
+  config:
+    icmp:
+      enable: true
+    dns:
+      enable: false
+  template:
+    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.0-alpha.2
