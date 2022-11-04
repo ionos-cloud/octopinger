@@ -170,17 +170,6 @@ func NewMetrics() *Metrics {
 		},
 	)
 
-	m.probeHealthGauge = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "octopinger_probe_health_total",
-			Help: "Health based on individual probes",
-		},
-		[]string{
-			"octopinger_node",
-			"octopinger_probe",
-		},
-	)
-
 	return m
 }
 
@@ -194,7 +183,6 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probePacketLossMean.Collect(ch)
 	m.probeNodesTotal.Collect(ch)
 	m.probeNodesReports.Collect(ch)
-	m.probeHealthGauge.Collect(ch)
 	m.probeDNSSuccess.Collect(ch)
 	m.probeDNSError.Collect(ch)
 }
@@ -209,7 +197,6 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probeRttMean.Describe(ch)
 	m.probeNodesTotal.Describe(ch)
 	m.probeNodesReports.Describe(ch)
-	m.probeHealthGauge.Describe(ch)
 	m.probeDNSSuccess.Describe(ch)
 	m.probeDNSError.Describe(ch)
 }
@@ -250,15 +237,6 @@ func (m *Monitor) Gather(collector Collector) {
 	}()
 
 	collector.Collect(ch)
-}
-
-// SetProbeHealth ...
-func (m *Monitor) SetProbeHealth(instance, probe string, healthy bool) {
-	value := 1.0
-	if !healthy {
-		value = 0
-	}
-	m.metrics.probeHealthGauge.WithLabelValues(instance, probe).Set(value)
 }
 
 // SetProbeNodesTotal ...

@@ -59,14 +59,11 @@ This is the list of Prometheus metrics :octopus: Octopinger is exporting.
 * `octopinger_probe_loss_min`
 * `octopinger_probe_loss_max`
 * `octopinger_probe_loss_mean`
-* `octopinger_probe_health_total`
 
 ### DNS
 
-* `octopinger_probe_dns_total`
 * `octopinger_probe_dns_success`
 * `octopinger_probe_dns_error`
-* `octopinger_probe_dns_failure`
 
 ## License
 
