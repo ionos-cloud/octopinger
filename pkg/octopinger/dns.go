@@ -40,6 +40,7 @@ func NewDNSProbe(nodeName, server string, names []string, opts ...Opt) *dnsProbe
 	options.Configure(opts...)
 
 	d := new(dnsProbe)
+	d.opts = options
 	d.nodeName = nodeName
 	d.server = server
 	d.names = names

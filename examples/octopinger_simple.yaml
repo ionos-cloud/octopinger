@@ -13,4 +13,4 @@ spec:
        - www.google.com
        - www.ionos.com
   template:
-    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.5
+    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.6-alpha.2
