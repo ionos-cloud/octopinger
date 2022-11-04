@@ -51,7 +51,7 @@ spec:
                         items:
                           type: string
                         type: array
-                      servers:
+                      server:
                         description: Server contains a domain name servers to use
                           for the probe. By default the configured DNS servers are
                           used.

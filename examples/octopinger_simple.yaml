@@ -9,6 +9,7 @@ spec:
       enable: true
     dns:
       enable: true
+      servers: 8.8.8.8
       names:
        - www.google.com
        - www.ionos.com
