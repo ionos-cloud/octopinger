@@ -9,9 +9,8 @@ spec:
       enable: true
     dns:
       enable: true
-      servers: 8.8.8.8
       names:
        - www.google.com
        - www.ionos.com
   template:
-    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.6-alpha.2
+    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.6
