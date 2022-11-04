@@ -45,7 +45,6 @@ var (
 
 // Metrics ...
 type Metrics struct {
-	probeHealthGauge    *prometheus.GaugeVec
 	probeRttMax         *prometheus.GaugeVec
 	probeRttMin         *prometheus.GaugeVec
 	probeRttMean        *prometheus.GaugeVec
