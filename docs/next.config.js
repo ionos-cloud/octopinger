@@ -6,8 +6,8 @@ const withNextra = require('nextra')({
     unstable_staticImage: true,
 })
 module.exports = withNextra({ 
-    basePath: isProd ? "/run" : "",
-    assetPrefix: isProd ? "/run/" : "", experimental: {
+    basePath: "",
+    assetPrefix: "", experimental: {
     images: {
         unoptimized: true
     }
