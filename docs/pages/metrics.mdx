@@ -1,0 +1,23 @@
+---
+title: Metrics
+---
+
+# Metrics
+
+All metrics are exposed via [Prometheus](https://prometheus.io/) on port `:8080` (default) and the `/metrics` path.
+
+### ICMP
+
+* `octopinger_probe_nodes_total`
+* `octopinger_probe_nodes_reports`
+* `octopinger_probe_rtt_min`
+* `octopinger_probe_rtt_mean`
+* `octopinger_probe_rtt_max`
+* `octopinger_probe_loss_min`
+* `octopinger_probe_loss_max`
+* `octopinger_probe_loss_mean`
+
+### DNS
+
+* `octopinger_probe_dns_success`
+* `octopinger_probe_dns_error`

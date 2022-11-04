@@ -1,0 +1,11 @@
+---
+title: Usage
+---
+
+# Usage
+
+## Templates
+
+Almost all strings (`vars`, `env`, `cmd`, `args`) are parsed by [Go's template engine](https://golang.org/pkg/text/template/) before execution or application. Variables are accessible via the dot syntax (`{{.VAR}}`).
+
+There are more functions supported via the [slim-spring](https://go-task.github.io/slim-sprig/) package.

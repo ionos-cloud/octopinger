@@ -1,0 +1,130 @@
+---
+title: Reference
+---
+
+# API Reference
+
+## CLI
+
+`run` has the following command line syntax:
+
+```bash
+run [--flags] [tasks...] [-- ARGS...]
+```
+
+| Short | Flag | Type | Default | Description |
+| - | - | - | - | - |
+| `-c` | `--config` | `string` | `.run.yml` | Config file. Enabled by default. Set to `.run.yml` or change to the location of your config |
+| `-w` | `--watch` | `bool` | `false` | Enables watch of the given tasks. This factors in the `watch` config in your `.run.yml` file. |
+| `-f` | `--force` | `bool` | `false` | Forces the execution of operations. |
+| `-l` | `--list` | `bool` | `false` | Lists the available tasks specified in the `.run.yml` file. |
+| `-v` | `--verbose` | `bool` | `false` | Enables verbose logging of runtime information. |
+| `-s` | `--silent` | `bool` | `false` | Does not log any runtime information. |
+| `-d` | `--dry` | `bool` | `false` | Does not apply destructive operations. |
+| `-p` | `--plugin` | `string` |  | Executes the provided plugin. Passes the CLI arguments via `--vars` and after the `--` to the execution of the plugin. |
+| `-w` | `--watch` | `bool` | `false` | Enables watch of the given tasks. This factors in the `watch` config in your `.run.yml` file. |
+|  | `--dir` | `string` | `.` | Sets the current working directory. Defaults to the current directory of execution. |
+|  | `--validate` | `bool` | `false` | Validates the specification file provided via `.run.yml`. |
+|  | `--var` | `[]string` |  | Sets the a variable in the format of `key=value` |
+|  | `--init` | `bool` | `false` | Creates a new `.run.yml` file at the provided location of `--config` (default: `./.run.yml`) |
+|  | `--version` | `bool` | `false` | Prints the current version. |
+
+## Schema
+
+### Example
+
+```yaml
+spec: 1
+version: 1.0.0
+authors:
+  - John Apple <john@example.com>
+homepage: https://github.com/katallaxie/run
+repository: https://andersnormal.github.io/run/
+tasks:
+  test:
+    disabled: true
+    desc: test
+    vars:
+      region: test
+    steps:
+      - 
+        id: foo
+        if: {{if .OS == "linux"}}
+        cmd: |
+          echo "Hello World"
+          echo {{.CWD}}
+        timeout-in-seconds: 10
+        continue-on-error: false
+        uses: remote-exec
+        vars:
+          cwd: {{.CWD}}
+        with:
+          region: eu-west-1
+    watch:
+      paths:
+        - pkg/config
+    template:
+      - 
+        file: ./examples/config.json.tpl
+        out: ./config.json
+        vars:
+          foo: bar
+  build:
+    default: true
+    deps:
+      - test
+    vars:
+      region: test
+    cmd:
+      - go build
+    watch:
+      paths:
+        - examples
+      ignore:
+        - .gitignore
+        - .run.yml
+```
+
+### General
+
+| Attribute | Type | Default | Description |
+| - | - | - | - |
+| `spec` | `int` | | Specification version to be used. The current version is `1`. |
+| `version` | `string` | | Version of the application. |
+| `authors` | `[]string` | | List of authors. |
+| `homepage` | `string` | | URL to the homepage of the application. |
+| `repository` | `string` | | URL to the repository of the application. |
+| `vars` | [`Vars`](#variable) | | Global variables. |
+| `env` | [`Env`](#variable) | | Global environment. |
+| `tasks` | [`Tasks`](#task) | | The task definitions. |
+
+### Task
+
+| Attribute | Type | Default | Description |
+| - | - | - | - |
+| `name` | `string` | | Name of the task. |
+| `working-dir` | `string` | `cwd` | Current directort which the task should run in. |
+| `disabled` | `bool` | `false` | Disable the task in execution. |
+| `depends-on` | `DependsOn` | | List of other task this task depends on in execution. |
+| `vars` | [`Vars`](#variable) | | Variables for this task. |
+| `env` | [`Env`](#variable) | | Task specific environment. |
+| `watch` | [`Watch`](#watch) | | Configuration for `watch` flag of the task. |
+| `template` | [`Templates`](#template) | | Templates to create for this task. |
+| `steps` | [`Steps`](#step) | | Templates to create for this task. |
+
+### Steps
+
+| Attribute | Type | Default | Description |
+| - | - | - | - |
+| `cmd` | `string` | | Commands to run in the current working directory. |
+| `working-dir` | `string` | `cwd` | Current directort which the task should run in. |
+| `vars` | [`Vars`](#variable) | | Variables for this task. |
+| `env` | [`Env`](#variable) | | Task specific environment. |
+| `if` | [`If`](#condition) | `true` | Condition to run this step. |
+| `uses` | `string` | | A [plugin](/plugins) to be run in this step. |
+| `with` | [`Vars`](#variable) |  | Extra variables for the plugin in the `uses` property. |
+| `depends-on` | `DependsOn` | | List of other task this task depends on in execution. |
+| `timeout-in-seconds` | `int64` | `math.MaxInt64` | The timeout for the execution of this step. This is borrowed from the `context` timeout. |
+| `continue-on-error` | `bool` | `false` | Enables to proceed with the next step even if the current step has failed. |
+
+> The `working-dir` is set to the current directory.

@@ -1,0 +1,47 @@
+---
+title: Plugins
+---
+
+# Plugins
+
+`run` is highly extensible via its plugin system. It uses the [golang plugin system over RPC](https://github.com/hashicorp/go-plugin) to add any new feature imaginable and to keep the core system lightweight.
+
+The rpc system uses gRPC to establish the communication between the command line tool and the plugins. The [protocol](https://raw.githubusercontent.com/katallaxie/run/main/pkg/proto/plugin.proto) is expressed in Google's protocol buffers.
+
+A plugin is created by importing the `github.com/katallaxie/run/pkg/plugin` and `github.com/katallaxie/run/pkg/proto` package and implementing the `proto.PluginServer` interface. 
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/katallaxie/run/pkg/plugin"
+	"github.com/katallaxie/run/pkg/proto"
+)
+
+func main() {
+	plugin.Serve(&plugin.ServeOpts{
+		GRPCPluginFunc: func() proto.PluginServer {
+			return &server{}
+		},
+	})
+}
+
+type server struct {
+	proto.UnimplementedPluginServer
+}
+
+// Start ...
+func (s *server) Execute(ctx context.Context, req *proto.Execute_Request) (*proto.Execute_Response, error) {
+	return &proto.Execute_Response{}, nil
+}
+
+// Stop ...
+func (s *server) Stop(ctx context.Context, req *proto.Stop_Request) (*proto.Stop_Response, error) {
+	return &proto.Stop_Response{}, nil
+}
+```
+
+Any set `--timeout` is enforced by the CLI, thus plugins are stopped if the set time elapses.

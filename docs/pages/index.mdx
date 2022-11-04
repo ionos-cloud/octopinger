@@ -1,0 +1,51 @@
+---
+title: Run - A versatile task runner
+---
+
+import Bleed from 'nextra-theme-docs/bleed'
+import Callout from 'nextra-theme-docs/callout'
+
+# 🐙 Octopinger
+
+Octopinger is an Kubernetes Operator to monitor the connectivity of your cluster. The probes use ICMP to determine the connectivity between cluster nodes. Metrics are exported via [Prometheus](https://prometheus.io/).
+
+<Callout>
+    This is under active development.
+</Callout>
+
+Installation is super easy. You can use [Helm](https://helm.sh/) to install the operator to you cluster and create Octopinger instances.
+
+```bash
+helm repo add octopinger https://octopinger.io/
+helm repo update 
+```
+
+Install Octopinger to your cluster in a `octopinger` namespace.
+
+```bash
+helm install octopinger octopinger/octopinger --create-namespace --namespace octopinger
+```
+
+After the installation you can use this example to create an Octopinger.
+
+```yaml
+apiVersion: octopinger.io/v1alpha1
+kind: Octopinger
+metadata:
+  name: demo
+spec:
+  label: octopinger
+  config:
+    icmp:
+      enable: true
+    dns:
+      enable: false
+  template:
+    image: ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.6
+```
+
+## Features
+
+* Ping all nodes in your cluster to detect availability and network issues
+* Test domain name record availability
+* Many [metrics](/metrics) exposed via [Prometheus](https://prometheus.io/)
