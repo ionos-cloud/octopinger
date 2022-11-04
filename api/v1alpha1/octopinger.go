@@ -60,10 +60,8 @@ type DNS struct {
 	Enable bool `json:"enable"`
 	// Names contains the list of domain names to query.
 	Names []string `json:"names,omitempty"`
-	// Types specifies the type of domain name records to query. By default this is A records.
-	Types []string `json:"types,omitempty"`
-	// Servers contains a list of domain name servers to use for the probe. By default the configured DNS servers are used.
-	Servers []string `json:"servers,omitempty"`
+	// Server contains a domain name servers to use for the probe. By default the configured DNS servers are used.
+	Server string `json:"servers,omitempty"`
 	// Timeout the time to wait for the probe to succeed. The default is "1m" (1 minute).
 	Timeout string `json:"timeout,omitempty"`
 }

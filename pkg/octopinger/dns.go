@@ -2,6 +2,8 @@ package octopinger
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -10,30 +12,41 @@ import (
 type token struct{}
 
 type dnsProbe struct {
-	maxConcurrency int
+	opts *Opts
 
-	dnsFailed  *dnsFailed
-	dnsTotal   *dnsTotal
 	dnsError   *dnsError
 	dnsSuccess *dnsSuccess
 
-	names []string
-
 	nodeName string
+	server   string
+	names    []string
+
+	maxConcurrency int
+	resolver       *net.Resolver
 
 	sem chan token
 	wg  sync.WaitGroup
 	mux sync.Mutex
 }
 
+var (
+	// ErrResolveHost ...
+	ErrResolveHost = errors.New("could not resolve host")
+)
+
 // NewDNSProbe ...
-func NewDNSProbe(nodeName string, names ...string) *dnsProbe {
+func NewDNSProbe(nodeName, server string, names []string, opts ...Opt) *dnsProbe {
+	options := new(Opts)
+	options.Configure(opts...)
+
 	d := new(dnsProbe)
 	d.nodeName = nodeName
+	d.server = server
 	d.names = names
 	d.maxConcurrency = 100
 	d.sem = make(chan token, d.maxConcurrency)
 
+	d.configureResolver()
 	d.Reset()
 
 	return d
@@ -41,45 +54,14 @@ func NewDNSProbe(nodeName string, names ...string) *dnsProbe {
 
 // Reset ...
 func (d *dnsProbe) Reset() {
-	d.dnsFailed = NewDNSFailed(d.nodeName)
 	d.dnsError = NewDNSError(d.nodeName)
 	d.dnsSuccess = NewDNSSuccess(d.nodeName)
-	d.dnsTotal = NewDNSTotal(d.nodeName)
 }
 
 // Collect ...
 func (d *dnsProbe) Collect(ch chan<- Metric) {
 	d.dnsError.Collect(ch)
-	d.dnsFailed.Collect(ch)
 	d.dnsSuccess.Collect(ch)
-	d.dnsTotal.Collect(ch)
-}
-
-type dnsFailed struct {
-	value    float64
-	nodeName string
-
-	Metric
-	Collector
-}
-
-// Write ...
-func (d *dnsFailed) Write(monitor *Monitor) error {
-	monitor.SetProbeDNSFailure(d.nodeName, d.value)
-
-	return nil
-}
-
-// Collect ...
-func (d *dnsFailed) Collect(ch chan<- Metric) {
-	ch <- d
-}
-
-// NewDNSFailed ...
-func NewDNSFailed(nodeName string) *dnsFailed {
-	return &dnsFailed{
-		nodeName: nodeName,
-	}
 }
 
 type dnsSuccess struct {
@@ -136,49 +118,6 @@ func NewDNSError(nodeName string) *dnsError {
 	}
 }
 
-type dnsTotal struct {
-	value    float64
-	nodeName string
-
-	Metric
-	Collector
-}
-
-// Write ...
-func (d *dnsTotal) Write(monitor *Monitor) error {
-	monitor.SetProbeDNSTotal(d.nodeName, d.value)
-
-	return nil
-}
-
-// Collect ...
-func (d *dnsTotal) Collect(ch chan<- Metric) {
-	ch <- d
-}
-
-// NewDNSTotal ...
-func NewDNSTotal(nodeName string) *dnsTotal {
-	return &dnsTotal{
-		nodeName: nodeName,
-	}
-}
-
-// SetTotal ...
-func (d *dnsProbe) SetTotal(value float64) {
-	d.mux.Lock()
-	defer d.mux.Unlock()
-
-	d.dnsTotal.value = value
-}
-
-// IncFailure ...
-func (d *dnsProbe) IncFailure() {
-	d.mux.Lock()
-	defer d.mux.Unlock()
-
-	d.dnsFailed.value += 1
-}
-
 // IncSuccess ...
 func (d *dnsProbe) IncSuccess() {
 	d.mux.Lock()
@@ -205,7 +144,7 @@ func (d *dnsProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 			select {
 			case <-ctx.Done():
 			case <-ticker.C:
-				d.resolve(ctx, d.names...)
+				d.do(ctx, d.names...)
 
 				metrics.Gather(d)
 				ticker.Reset(1 * time.Second)
@@ -216,14 +155,11 @@ func (d *dnsProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 	}
 }
 
-func (d *dnsProbe) resolve(ctx context.Context, names ...string) {
-	resolver := net.Resolver{}
-
+func (d *dnsProbe) do(ctx context.Context, hosts ...string) {
 	d.Reset()
-	d.SetTotal(float64(len(names)))
 
-	for _, name := range names {
-		name := name
+	for _, host := range hosts {
+		host := host
 
 		d.wg.Add(1)
 		go func() {
@@ -231,27 +167,46 @@ func (d *dnsProbe) resolve(ctx context.Context, names ...string) {
 
 			d.sem <- token{}
 
-			ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-			defer cancel()
-
-			ips, err := resolver.LookupHost(ctx, name)
+			err := d.resolve(ctx, host)
 			if err != nil {
 				d.IncError()
-
-				return
+			} else {
+				d.IncSuccess()
 			}
-
-			if len(ips) == 0 {
-				d.IncFailure()
-
-				return
-			}
-
-			d.IncSuccess()
 
 			<-d.sem
 		}()
 	}
 
 	d.wg.Wait()
+}
+
+func (d *dnsProbe) resolve(ctx context.Context, host string) error {
+	ctx, cancel := context.WithTimeout(ctx, d.opts.timeout)
+	defer cancel()
+
+	ips, err := d.resolver.LookupHost(ctx, host)
+	if len(ips) == 0 {
+		return ErrResolveHost
+	}
+
+	return err
+}
+
+func (dp *dnsProbe) configureResolver() {
+	r := &net.Resolver{
+		PreferGo: true,
+	}
+
+	if dp.server != "" {
+		r.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: dp.opts.timeout,
+			}
+
+			return d.DialContext(ctx, network, fmt.Sprintf("%s:53", dp.server))
+		}
+	}
+
+	dp.resolver = r
 }

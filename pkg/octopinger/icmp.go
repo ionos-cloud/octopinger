@@ -9,12 +9,6 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
-// Collector ...
-type Collector interface {
-	// Collect ...
-	Collect(ch chan<- Metric)
-}
-
 type maxRtt struct {
 	values []float64
 
@@ -275,20 +269,6 @@ func (m *totalNumber) Collect(ch chan<- Metric) {
 // Collect ...
 func (m *reportNumber) Collect(ch chan<- Metric) {
 	ch <- m
-}
-
-// Metric
-type Metric interface {
-	// Write ...
-	Write(m *Monitor) error
-}
-
-// Probe ...
-type Probe interface {
-	// Do ...
-	Do(ctx context.Context, monitor Monitor) error
-
-	Collector
 }
 
 type icmpProbe struct {

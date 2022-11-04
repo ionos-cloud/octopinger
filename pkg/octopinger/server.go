@@ -102,19 +102,39 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 			return err
 		}
 
-		opts := []Opt{
-			WithConfigPath(s.opts.configPath),
-			WithNodeName(s.opts.nodeName),
-			WithLogger(s.opts.logger),
-			WithPodIP(s.opts.podIP),
-		}
-
 		if cfg.ICMP.Enable {
-			run(NewICMPProbe(s.opts.nodeName, opts...).Do(ctx, s.opts.monitor))
+			icmp := NewICMPProbe(
+				s.opts.nodeName,
+				WithConfigPath(s.opts.configPath),
+				WithNodeName(s.opts.nodeName),
+				WithLogger(s.opts.logger),
+				WithPodIP(s.opts.podIP),
+			)
+
+			run(icmp.Do(ctx, s.opts.monitor))
 		}
 
 		if cfg.DNS.Enable && len(cfg.DNS.Names) > 0 {
-			run(NewDNSProbe(s.opts.nodeName, cfg.DNS.Names...).Do(ctx, s.opts.monitor))
+			timeout := 3 * time.Second
+			if cfg.DNS.Timeout != "" {
+				timeout, err = time.ParseDuration(cfg.DNS.Timeout)
+				if err != nil {
+					return err
+				}
+			}
+
+			dns := NewDNSProbe(
+				s.opts.nodeName,
+				cfg.DNS.Server,
+				cfg.DNS.Names,
+				WithConfigPath(s.opts.configPath),
+				WithNodeName(s.opts.nodeName),
+				WithLogger(s.opts.logger),
+				WithPodIP(s.opts.podIP),
+				WithTimeout(timeout),
+			)
+
+			run(dns.Do(ctx, s.opts.monitor))
 		}
 
 		<-ctx.Done()

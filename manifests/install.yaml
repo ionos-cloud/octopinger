@@ -53,22 +53,14 @@ spec:
                           type: string
                         type: array
                       servers:
-                        description: Servers contains a list of domain name servers
-                          to use for the probe. By default the configured DNS servers
-                          are used.
-                        items:
-                          type: string
-                        type: array
+                        description: Server contains a domain name servers to use
+                          for the probe. By default the configured DNS servers are
+                          used.
+                        type: string
                       timeout:
                         description: Timeout the time to wait for the probe to succeed.
                           The default is "1m" (1 minute).
                         type: string
-                      types:
-                        description: Types specifies the type of domain name records
-                          to query. By default this is A records.
-                        items:
-                          type: string
-                        type: array
                     required:
                     - enable
                     type: object
