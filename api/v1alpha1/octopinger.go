@@ -73,11 +73,13 @@ type ICMP struct {
 	// ExcludeNodes allows to exclude specific nodes from probing.
 	ExcludeNodes []string `json:"exclude_nodes,omitempty"`
 	// AdditionalTargets this is a list of additional targets to probe via ICMP.
-	AdditionalTargets []string ` json:"additional_targets,omitempty"`
+	AdditionalTargets []string ` json:"additionaltargets,omitempty"`
 	// Timeout the time to wait for the probe to succeed. The default is "1m" (1 minute).
 	Timeout string `json:"timeout,omitempty"`
 	// TTL is the time to live for the ICMP packet.
 	TTL string `json:"ttl,omitempty"`
+	// ThresholdPacketLossRate determines the threshold to report a node as available or not.
+	ThresholdPacketLossRate string `json:"threshold_packet_loss_rate,omitempty"`
 }
 
 // Template ...
