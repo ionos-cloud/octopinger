@@ -203,6 +203,14 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 										},
 									},
 								},
+								{
+									Name: "HOST_IP",
+									ValueFrom: &corev1.EnvVarSource{
+										FieldRef: &corev1.ObjectFieldSelector{
+											FieldPath: "status.hostIP",
+										},
+									},
+								},
 							},
 						},
 					},

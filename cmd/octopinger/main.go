@@ -16,6 +16,7 @@ type flags struct {
 	ConfigPath string `env:"CONFIG_PATH" envDefault:"/etc/config"`
 	StatusAddr string `env:"STATUS_ADDR" envDefault:"0.0.0.0:8081"`
 	PodIP      string `env:"POD_IP"`
+	HostIP     string `env:"HOST_IP"`
 	Nodename   string `env:"NODE_NAME"`
 }
 
@@ -38,6 +39,7 @@ func init() {
 	rootCmd.Flags().StringVar(&f.StatusAddr, "status-addr", f.StatusAddr, "status addr")
 	rootCmd.Flags().StringVar(&f.Nodename, "nodename", f.Nodename, "node name")
 	rootCmd.Flags().StringVar(&f.PodIP, "pod-ip", f.PodIP, "pod ip")
+	rootCmd.Flags().StringVar(&f.HostIP, "host-ip", f.HostIP, "host ip")
 }
 
 func main() {

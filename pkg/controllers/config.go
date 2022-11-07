@@ -73,11 +73,7 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 
 	ips := []string{}
 	for _, p := range pods.Items {
-		if p.Status.Phase != corev1.PodRunning {
-			continue
-		}
-
-		ips = append(ips, p.Status.PodIP)
+		ips = append(ips, p.Status.HostIP)
 	}
 	cfg.Data["nodes"] = strings.Join(ips, "\n")
 
@@ -85,7 +81,7 @@ func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (
 
 	err = s.Update(ctx, cfg)
 	if err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{Requeue: true}, err
 	}
 
 	return reconcile.Result{}, nil

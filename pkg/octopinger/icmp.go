@@ -339,7 +339,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 		}
 
 		filters := []NodeFilter{
-			FilterIP(i.opts.podIP),
+			FilterIP(i.opts.hostIP),
 		}
 
 		nodeList := NewNodeList(loaders, filters...)

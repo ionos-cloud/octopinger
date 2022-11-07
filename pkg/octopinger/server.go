@@ -21,6 +21,7 @@ type Opts struct {
 	monitor    *Monitor
 	nodeName   string
 	podIP      string
+	hostIP     string
 	timeout    time.Duration
 }
 
@@ -83,6 +84,13 @@ func WithPodIP(ip string) Opt {
 	}
 }
 
+// WithHostIP ...
+func WithHostIP(ip string) Opt {
+	return func(o *Opts) {
+		o.hostIP = ip
+	}
+}
+
 // NewServer ...
 func NewServer(opts ...Opt) *server {
 	options := new(Opts)
@@ -109,6 +117,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 				WithNodeName(s.opts.nodeName),
 				WithLogger(s.opts.logger),
 				WithPodIP(s.opts.podIP),
+				WithHostIP(s.opts.hostIP),
 			)
 
 			run(icmp.Do(ctx, s.opts.monitor))
@@ -131,6 +140,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 				WithNodeName(s.opts.nodeName),
 				WithLogger(s.opts.logger),
 				WithPodIP(s.opts.podIP),
+				WithHostIP(s.opts.hostIP),
 				WithTimeout(timeout),
 			)
 
