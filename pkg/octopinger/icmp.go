@@ -2,6 +2,7 @@ package octopinger
 
 import (
 	"context"
+	"strconv"
 	"sync"
 	"time"
 
@@ -331,6 +332,18 @@ func (i *icmpProbe) Collect(ch chan<- Metric) {
 // Do ...
 func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 	return func() error {
+		cfg := i.opts.config
+		packetLossThreshold := 0.05
+
+		if cfg.ICMP.ThresholdPacketLossRate != "" {
+			s, err := strconv.ParseFloat(cfg.ICMP.ThresholdPacketLossRate, 64)
+			if err != nil {
+				return err
+			}
+
+			packetLossThreshold = s
+		}
+
 		ticker := time.NewTicker(1 * time.Second)
 		defer ticker.Stop()
 
@@ -367,7 +380,10 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				}
 
 				for _, stat := range stats {
-					i.IncReportNumber()
+					if stat.PktLossRate < packetLossThreshold {
+						i.IncReportNumber()
+					}
+
 					i.AddMaxRtt(float64(stat.Worst.Microseconds()))
 					i.AddMinRtt(float64(stat.Best.Microseconds()))
 					i.AddMeanRtt(float64(stat.Mean.Microseconds()))

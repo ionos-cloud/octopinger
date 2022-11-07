@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/ionos-cloud/octopinger/api/v1alpha1"
 	srv "github.com/katallaxie/pkg/server"
 	"go.uber.org/zap"
 )
@@ -23,6 +24,7 @@ type Opts struct {
 	podIP      string
 	hostIP     string
 	timeout    time.Duration
+	config     *v1alpha1.Config
 }
 
 // Configure ...
@@ -34,6 +36,13 @@ func (o *Opts) Configure(opts ...Opt) {
 
 // Opt ...
 type Opt func(*Opts)
+
+// WithConfig ...
+func WithConfig(c *v1alpha1.Config) Opt {
+	return func(o *Opts) {
+		o.config = c
+	}
+}
 
 // WithMonitor ...
 func WithMonitor(m *Monitor) Opt {
@@ -118,6 +127,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 				WithLogger(s.opts.logger),
 				WithPodIP(s.opts.podIP),
 				WithHostIP(s.opts.hostIP),
+				WithConfig(cfg),
 			)
 
 			run(icmp.Do(ctx, s.opts.monitor))
@@ -142,6 +152,7 @@ func (s *server) Start(ctx context.Context, ready srv.ReadyFunc, run srv.RunFunc
 				WithPodIP(s.opts.podIP),
 				WithHostIP(s.opts.hostIP),
 				WithTimeout(timeout),
+				WithConfig(cfg),
 			)
 
 			run(dns.Do(ctx, s.opts.monitor))
