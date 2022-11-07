@@ -76,8 +76,8 @@ type ICMP struct {
 	AdditionalTargets []string ` json:"additionaltargets,omitempty"`
 	// Timeout the time to wait for the probe to succeed. The default is "1m" (1 minute).
 	Timeout string `json:"timeout,omitempty"`
-	// TTL is the time to live for the ICMP packet.
-	TTL string `json:"ttl,omitempty"`
+	// Count is number of ICMP packets to send.
+	Count int `json:"count,omitempty"`
 	// NodePacketLossThreshold determines the threshold to report a node as available or not (Default: "0.05")
 	NodePacketLossThreshold string `json:"node_packet_loss_treshold,omitempty"`
 }

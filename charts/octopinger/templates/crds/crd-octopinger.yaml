@@ -72,6 +72,9 @@ spec:
                         items:
                           type: string
                         type: array
+                      count:
+                        description: Count is number of ICMP packets to send.
+                        type: integer
                       enable:
                         description: Enable is turning the ICMP probe on for Octopinger.
                           By default all nodes are probed.

@@ -14,6 +14,7 @@ import (
 const (
 	defaultPacketLossThreshold = 0.05
 	defaultTimeout             = 5 * time.Second
+	defaultICMPCount           = 5
 )
 
 type maxRtt struct {
@@ -295,6 +296,7 @@ type icmpProbe struct {
 	packetLoss   *packetLoss
 
 	timeout         time.Duration
+	count           int
 	reportThreshold float64
 
 	Collector
@@ -320,6 +322,10 @@ func (i *icmpProbe) configure(c *v1alpha1.Config) error {
 		i.timeout = s
 	}
 
+	if c.ICMP.Count > 0 {
+		i.count = c.ICMP.Count
+	}
+
 	return nil
 }
 
@@ -334,6 +340,7 @@ func NewICMPProbe(nodeName string, opts ...Opt) *icmpProbe {
 	p.name = "icmp"
 
 	p.timeout = defaultTimeout
+	p.count = defaultICMPCount
 	p.reportThreshold = defaultPacketLossThreshold
 
 	p.Reset()
@@ -398,7 +405,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 
 				opt := *pinger.DefaultICMPPingOpts
 				opt.Interval = func() time.Duration { return 100 * time.Millisecond }
-				opt.PingCount = 5
+				opt.PingCount = i.count
 				opt.PingTimeout = i.timeout
 
 				i.Reset()
