@@ -172,22 +172,25 @@ func (m *packetLoss) Write(monitor *Monitor) error {
 	if err != nil {
 		return err
 	}
-
 	monitor.SetProbePacketLossMean(m.nodeName, m.probeName, mean)
 
 	max, err := stats.Mean(m.values)
 	if err != nil {
 		return err
 	}
-
 	monitor.SetProbePacketLossMax(m.nodeName, m.probeName, max)
 
 	min, err := stats.Min(m.values)
 	if err != nil {
 		return err
 	}
-
 	monitor.SetProbePacketLossMin(m.nodeName, m.probeName, min)
+
+	sum, err := stats.Sum(m.values)
+	if err != nil {
+		return err
+	}
+	monitor.SetProbePacketLossTotal(m.nodeName, m.probeName, sum)
 
 	return nil
 }

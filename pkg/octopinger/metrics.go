@@ -45,16 +45,17 @@ var (
 
 // Metrics ...
 type Metrics struct {
-	probeRttMax         *prometheus.GaugeVec
-	probeRttMin         *prometheus.GaugeVec
-	probeRttMean        *prometheus.GaugeVec
-	probePacketLossMin  *prometheus.GaugeVec
-	probePacketLossMax  *prometheus.GaugeVec
-	probePacketLossMean *prometheus.GaugeVec
-	probeNodesTotal     *prometheus.GaugeVec
-	probeNodesReports   *prometheus.GaugeVec
-	probeDNSSuccess     *prometheus.GaugeVec
-	probeDNSError       *prometheus.GaugeVec
+	probeRttMax          *prometheus.GaugeVec
+	probeRttMin          *prometheus.GaugeVec
+	probeRttMean         *prometheus.GaugeVec
+	probePacketLossMin   *prometheus.GaugeVec
+	probePacketLossMax   *prometheus.GaugeVec
+	probePacketLossMean  *prometheus.GaugeVec
+	probePacketLossTotal *prometheus.GaugeVec
+	probeNodesTotal      *prometheus.GaugeVec
+	probeNodesReports    *prometheus.GaugeVec
+	probeDNSSuccess      *prometheus.GaugeVec
+	probeDNSError        *prometheus.GaugeVec
 }
 
 // NewMetrics ...
@@ -84,7 +85,7 @@ func NewMetrics() *Metrics {
 	m.probeNodesTotal = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_nodes_total",
-			Help: "Total number of probed nodes",
+			Help: "Total number of probed nodes.",
 		},
 		[]string{
 			"octopinger_node",
@@ -95,7 +96,7 @@ func NewMetrics() *Metrics {
 	m.probeNodesReports = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_nodes_reports",
-			Help: "Number of nodes that reported results",
+			Help: "Number of nodes that reported results.",
 		},
 		[]string{
 			"octopinger_node",
@@ -106,7 +107,7 @@ func NewMetrics() *Metrics {
 	m.probeRttMin = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_rtt_min",
-			Help: "Min round-trip time of the probe in this instance",
+			Help: "Min round-trip time of the probe in this instance.",
 		},
 		[]string{
 			"octopinger_node",
@@ -117,7 +118,7 @@ func NewMetrics() *Metrics {
 	m.probeRttMean = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_rtt_mean",
-			Help: "Mean round-trip time of the probe in this instance",
+			Help: "Mean round-trip time of the probe in this instance.",
 		},
 		[]string{
 			"octopinger_node",
@@ -128,7 +129,7 @@ func NewMetrics() *Metrics {
 	m.probeRttMax = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_rtt_max",
-			Help: "Max round-trip time of the probe in this instance",
+			Help: "Max round-trip time of the probe in this instance.",
 		},
 		[]string{
 			"octopinger_node",
@@ -139,7 +140,7 @@ func NewMetrics() *Metrics {
 	m.probePacketLossMin = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_loss_min",
-			Help: "Min percentage of lost packets",
+			Help: "Min percentage of lost packets.",
 		},
 		[]string{
 			"octopinger_node",
@@ -150,7 +151,7 @@ func NewMetrics() *Metrics {
 	m.probePacketLossMax = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_loss_max",
-			Help: "Max percentage of lost packets",
+			Help: "Max percentage of lost packets.",
 		},
 		[]string{
 			"octopinger_node",
@@ -161,7 +162,18 @@ func NewMetrics() *Metrics {
 	m.probePacketLossMean = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "octopinger_probe_loss_mean",
-			Help: "Mean percentage of lost packets",
+			Help: "Mean percentage of lost packets.",
+		},
+		[]string{
+			"octopinger_node",
+			"octopinger_probe",
+		},
+	)
+
+	m.probePacketLossTotal = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "octopinger_probe_loss_total",
+			Help: "Total packet loss on a node.",
 		},
 		[]string{
 			"octopinger_node",
@@ -180,6 +192,7 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.probePacketLossMax.Collect(ch)
 	m.probePacketLossMin.Collect(ch)
 	m.probePacketLossMean.Collect(ch)
+	m.probePacketLossTotal.Collect(ch)
 	m.probeNodesTotal.Collect(ch)
 	m.probeNodesReports.Collect(ch)
 	m.probeDNSSuccess.Collect(ch)
@@ -193,6 +206,7 @@ func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.probePacketLossMax.Describe(ch)
 	m.probePacketLossMin.Describe(ch)
 	m.probePacketLossMean.Describe(ch)
+	m.probePacketLossTotal.Describe(ch)
 	m.probeRttMean.Describe(ch)
 	m.probeNodesTotal.Describe(ch)
 	m.probeNodesReports.Describe(ch)
@@ -276,6 +290,11 @@ func (m *Monitor) SetProbePacketLossMax(instance, probe string, percentage float
 // SetProbePacketLossMean ...
 func (m *Monitor) SetProbePacketLossMean(instance, probe string, percentage float64) {
 	m.metrics.probePacketLossMax.WithLabelValues(instance, probe).Set(percentage)
+}
+
+// SetProbePacketLossTotal ...
+func (m *Monitor) SetProbePacketLossTotal(instance, probe string, total float64) {
+	m.metrics.probePacketLossTotal.WithLabelValues(instance, probe).Set(total)
 }
 
 // SetProbeDNSError ...
