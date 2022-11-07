@@ -6,6 +6,12 @@
 
 Octopinger is an Kubernetes Operator to monitor the connectivity of your cluster. The probes use `ICMP` to determine the connectivity between cluster nodes. Metrics are exported via [Prometheus](https://prometheus.io/).
 
+<hr/>
+
+<img width="1599" alt="Screenshot 2022-11-07 at 11 16 06" src="https://user-images.githubusercontent.com/570959/200285464-e2d8885b-f7bc-4fe4-8ef8-d11593e89a11.png">
+
+<hr/>
+
 ## Get Started
 
 The operator is creating a `DeamonSet` to schedula an `octopinger` instance on all Kubernetes nodes. The `octopinger` instances get created with a `ConfigMap` that contains the current running nodes and configuration options. The `ConfigMap` is updated as instances are in the `running` phase and have an IP address assigned.
