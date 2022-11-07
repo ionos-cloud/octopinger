@@ -67,7 +67,7 @@ spec:
                   icmp:
                     description: ICMP is the configuration for the ICMP probe.
                     properties:
-                      additional_targets:
+                      additionaltargets:
                         description: AdditionalTargets this is a list of additional
                           targets to probe via ICMP.
                         items:
@@ -83,9 +83,9 @@ spec:
                         items:
                           type: string
                         type: array
-                      threshold_packet_loss_rate:
-                        description: ThresholdPacketLossRate determines the threshold
-                          to report a node as available or not.
+                      node_packet_loss_treshold:
+                        description: 'NodePacketLossThreshold determines the threshold
+                          to report a node as available or not (Default: "0.05")'
                         type: string
                       timeout:
                         description: Timeout the time to wait for the probe to succeed.

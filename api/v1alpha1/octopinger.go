@@ -78,8 +78,8 @@ type ICMP struct {
 	Timeout string `json:"timeout,omitempty"`
 	// TTL is the time to live for the ICMP packet.
 	TTL string `json:"ttl,omitempty"`
-	// ThresholdPacketLossRate determines the threshold to report a node as available or not.
-	ThresholdPacketLossRate string `json:"threshold_packet_loss_rate,omitempty"`
+	// NodePacketLossThreshold determines the threshold to report a node as available or not (Default: "0.05")
+	NodePacketLossThreshold string `json:"node_packet_loss_treshold,omitempty"`
 }
 
 // Template ...

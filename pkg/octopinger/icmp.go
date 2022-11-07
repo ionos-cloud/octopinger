@@ -7,7 +7,13 @@ import (
 	"time"
 
 	"github.com/chenjiandongx/pinger"
+	"github.com/ionos-cloud/octopinger/api/v1alpha1"
 	"github.com/montanaflynn/stats"
+)
+
+const (
+	defaultPacketLossThreshold = 0.05
+	defaultTimeout             = 5 * time.Second
 )
 
 type maxRtt struct {
@@ -285,8 +291,33 @@ type icmpProbe struct {
 	reportNumber *reportNumber
 	packetLoss   *packetLoss
 
+	timeout         time.Duration
+	reportThreshold float64
+
 	Collector
 	sync.RWMutex
+}
+
+func (i *icmpProbe) configure(c *v1alpha1.Config) error {
+	if c.ICMP.NodePacketLossThreshold != "" {
+		s, err := strconv.ParseFloat(c.ICMP.NodePacketLossThreshold, 64)
+		if err != nil {
+			return err
+		}
+
+		i.reportThreshold = s
+	}
+
+	if c.ICMP.Timeout != "" {
+		s, err := time.ParseDuration(c.ICMP.Timeout)
+		if err != nil {
+			return err
+		}
+
+		i.timeout = s
+	}
+
+	return nil
 }
 
 // NewICMPProbe ...
@@ -298,6 +329,9 @@ func NewICMPProbe(nodeName string, opts ...Opt) *icmpProbe {
 	p.opts = options
 	p.nodeName = nodeName
 	p.name = "icmp"
+
+	p.timeout = defaultTimeout
+	p.reportThreshold = defaultPacketLossThreshold
 
 	p.Reset()
 
@@ -332,16 +366,9 @@ func (i *icmpProbe) Collect(ch chan<- Metric) {
 // Do ...
 func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 	return func() error {
-		cfg := i.opts.config
-		packetLossThreshold := 0.05
-
-		if cfg.ICMP.ThresholdPacketLossRate != "" {
-			s, err := strconv.ParseFloat(cfg.ICMP.ThresholdPacketLossRate, 64)
-			if err != nil {
-				return err
-			}
-
-			packetLossThreshold = s
+		err := i.configure(i.opts.config)
+		if err != nil {
+			return err
 		}
 
 		ticker := time.NewTicker(1 * time.Second)
@@ -369,7 +396,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				opt := *pinger.DefaultICMPPingOpts
 				opt.Interval = func() time.Duration { return 100 * time.Millisecond }
 				opt.PingCount = 5
-				opt.PingTimeout = 5 * time.Second
+				opt.PingTimeout = i.timeout
 
 				i.Reset()
 				i.SetTotalNumber(float64(len(nodes)))
@@ -380,7 +407,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				}
 
 				for _, stat := range stats {
-					if stat.PktLossRate < packetLossThreshold {
+					if stat.PktLossRate < i.reportThreshold {
 						i.IncReportNumber()
 					}
 
