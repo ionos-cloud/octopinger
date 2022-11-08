@@ -27,7 +27,7 @@ require (
 	k8s.io/client-go v0.25.3
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	mvdan.cc/gofumpt v0.4.0
-	sigs.k8s.io/controller-runtime v0.13.0
+	sigs.k8s.io/controller-runtime v0.13.1
 	sigs.k8s.io/controller-tools v0.6.1
 	sigs.k8s.io/kustomize/kustomize/v3 v3.10.0
 )
