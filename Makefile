@@ -1,5 +1,8 @@
 VERSION ?= 0.0.33
 
+# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
+ENVTEST_K8S_VERSION = 1.25.0
+
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
 
@@ -42,10 +45,6 @@ vet: ## Run go vet against code.
 build:
 	@goreleaser build --rm-dist --snapshot
 
-.PHONY: test
-test:
-	@go test -race ./... -count=1 -cover -coverprofile cover.out
-
 .PHONY: vendor
 vendor: export GOPRIVATE=github.com/ionos-cloud
 vendor:
@@ -62,3 +61,20 @@ deploy: generate ## Deploy controller to the K8s cluster specified in ~/.kube/co
 remove: generate ## Remove controller to the K8s cluster specified in ~/.kube/config.
 	cd manifests/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build manifests/default | kubectl delete -f -
+
+##@ Test
+
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+ENVTEST ?= $(LOCALBIN)/setup-envtest
+
+.PHONY: envtest
+envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
+$(ENVTEST): $(LOCALBIN)
+	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: test
+test: envtest
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
