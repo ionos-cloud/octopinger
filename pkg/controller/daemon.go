@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"reflect"
 
-	v1alpha1 "github.com/ionos-cloud/octopinger/api/v1alpha1"
+	"github.com/ionos-cloud/octopinger/api/v1alpha1"
 	"github.com/ionos-cloud/octopinger/pkg/utils"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -70,7 +70,7 @@ type daemonReconciler struct {
 // Reconcile ...
 func (d *daemonReconciler) Reconcile(ctx context.Context, r reconcile.Request) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
-	log.Info("Reconciling Octopinger")
+	log.Info("reconcile octopinger")
 
 	octopinger := &v1alpha1.Octopinger{}
 
@@ -242,6 +242,11 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 
 	existingDS := &appsv1.DaemonSet{}
 	if utils.IsObjectFound(ctx, d, octopinger.Namespace, octopinger.Name+"-daemonset", existingDS) {
+		// this is not DaemonSet is not owned by Octopinger
+		if ownerRef := metav1.GetControllerOf(existingDS); ownerRef == nil || ownerRef.Kind != v1alpha1.CRDResourceKind {
+			return nil
+		}
+
 		if !reflect.DeepEqual(existingDS, ds) {
 			existingDS = ds
 			return d.Update(ctx, existingDS)
@@ -257,6 +262,7 @@ func (d *daemonReconciler) reconcileDaemonSets(ctx context.Context, octopinger *
 
 func (d *daemonReconciler) reconcileConfigMaps(ctx context.Context, octopinger *v1alpha1.Octopinger) error {
 	log := ctrl.LoggerFrom(ctx)
+
 	log.Info("reconciling config map")
 
 	configMap := &corev1.ConfigMap{}

@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	// CRDResourceKind ...
 	CRDResourceKind = "Octopinger"
 )
 

@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	api "github.com/ionos-cloud/octopinger/api/v1alpha1"
-	"github.com/ionos-cloud/octopinger/pkg/controllers"
+	"github.com/ionos-cloud/octopinger/pkg/controller"
 	"github.com/ionos-cloud/octopinger/pkg/utils"
 	//+kubebuilder:scaffold:imports
 )
@@ -116,12 +116,12 @@ func run(ctx context.Context) error {
 }
 
 func setupControllers(f *flags, mgr ctrl.Manager) error {
-	err := controllers.NewDaemonReconciler(mgr)
+	err := controller.NewDaemonReconciler(mgr)
 	if err != nil {
 		return err
 	}
 
-	err = controllers.NewConfigReconciler(mgr)
+	err = controller.NewConfigReconciler(mgr)
 	if err != nil {
 		return err
 	}
