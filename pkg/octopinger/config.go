@@ -56,10 +56,9 @@ func (n *NodeList) Load() ([]string, error) {
 		nodes = append(nodes, n...)
 	}
 
-	for i := len(nodes) - 1; i >= 0; i-- {
-		for _, filter := range n.filters {
-			ok := filter(nodes[i])
-			if ok {
+	for _, filter := range n.filters {
+		for i := len(nodes) - 1; i >= 0; i-- {
+			if filter(nodes[i]) {
 				nodes = append(nodes[:i], nodes[i+1:]...)
 			}
 		}
