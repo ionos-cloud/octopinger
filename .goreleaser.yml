@@ -35,7 +35,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-        - -s -w
+        - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
     no_unique_dist_dir: true
 
 archives:
