@@ -27,7 +27,7 @@ kubectl create namespace octopinger
 Next, install the custom resource defintions, service accounts, roles and operator.
 
 ```bash
-kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.1.10/manifests/install.yaml
+kubectl apply -n octopinger -f https://raw.githubusercontent.com/ionos-cloud/octopinger/v0.1.11/manifests/install.yaml
 ```
 
 Now, you are ready to install octopinger to your cluster.
