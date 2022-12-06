@@ -22,6 +22,16 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
+var (
+	build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
+)
+
 type flags struct {
 	enableLeaderElection bool
 	metricsAddr          string
@@ -36,7 +46,8 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "operator",
+	Use:     "operator",
+	Version: build,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return run(cmd.Context())
 	},
@@ -45,6 +56,7 @@ var rootCmd = &cobra.Command{
 func printVersion() {
 	setupLog.Info(fmt.Sprintf("Go Version: %s", goruntime.Version()))
 	setupLog.Info(fmt.Sprintf("Go OS/Arch: %s/%s", goruntime.GOOS, goruntime.GOARCH))
+	setupLog.Info(fmt.Sprintf("Build: %s", build))
 }
 
 func init() {

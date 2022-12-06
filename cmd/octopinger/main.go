@@ -3,12 +3,23 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/ionos-cloud/octopinger/pkg/octopinger"
 	"github.com/katallaxie/pkg/server"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+)
+
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
+var (
+	build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
 )
 
 type flags struct {
@@ -23,7 +34,8 @@ type flags struct {
 var f = &flags{}
 
 var rootCmd = &cobra.Command{
-	Use: "octopinger",
+	Use:     "octopinger",
+	Version: build,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runE(cmd.Context())
 	},
@@ -57,7 +69,7 @@ func runE(ctx context.Context) error {
 
 	defer func() { _ = logger.Sync() }()
 
-	logger.Sugar().Infof("Starting octopinger on %s", f.Nodename)
+	logger.Sugar().Infow("starting octopinger", "build", build, "nodename", f.Nodename, "pod-ip", f.PodIP, "host-ip", f.HostIP)
 
 	srv, _ := server.WithContext(ctx)
 

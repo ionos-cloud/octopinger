@@ -49,7 +49,7 @@ func OcotopingerManaged() predicate.Predicate {
 // Reconcile ...
 func (s *configReconciler) Reconcile(ctx context.Context, r reconcile.Request) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
-	log.Info("Reconciling Octopinger Config")
+	log.Info("reconcile octopinger config")
 
 	ds := &appsv1.DaemonSet{}
 	err := s.Get(ctx, r.NamespacedName, ds)
