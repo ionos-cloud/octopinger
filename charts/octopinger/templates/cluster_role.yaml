@@ -9,6 +9,7 @@ rules:
   - octopinger.io
   resources:
   - octopingers
+  - octopingers/status
   verbs:
   - '*'
 - apiGroups:
