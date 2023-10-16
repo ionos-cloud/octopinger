@@ -6,12 +6,38 @@ metadata:
     {{- include "octopinger.labels" (dict "context" . "component" .Values.controller.name "name" .Values.controller.name) | nindent 4 }}
 rules:
 - apiGroups:
-  - '*'
+  - octopinger.io
   resources:
-  - '*'
+  - octopingers
   verbs:
   - '*'
-- nonResourceURLs:
-  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods
   verbs:
-  - '*'
+  - list
+  - get
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - get
+  - update
+  - watch
+  - delete
+  - create
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - list
+  - get
+  - update
+  - watch
+  - delete
+  - create
