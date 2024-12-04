@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/chenjiandongx/pinger v0.2.0
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.4.2
 	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang/mock v1.7.0-rc.1
@@ -13,14 +13,14 @@ require (
 	github.com/helm/chart-releaser v1.4.1
 	github.com/katallaxie/pkg v0.5.4
 	github.com/montanaflynn/stats v0.7.1
-	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.10
+	github.com/onsi/ginkgo/v2 v2.20.1
+	github.com/onsi/gomega v1.36.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
-	golang.org/x/mod v0.13.0
+	golang.org/x/mod v0.20.0
 	helm.sh/helm v2.17.0+incompatible
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
@@ -107,7 +107,7 @@ require (
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
-	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-toolsmith/astcast v1.1.0 // indirect
 	github.com/go-toolsmith/astcopy v1.1.0 // indirect
 	github.com/go-toolsmith/astequal v1.1.0 // indirect
@@ -138,7 +138,7 @@ require (
 	github.com/google/go-github/v36 v36.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
+	github.com/google/pprof v0.0.0-20240827171923-fa2c70bbbfe5 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20230610083614-0e73809eb601 // indirect
@@ -275,22 +275,22 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.tmz.dev/musttag v0.7.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
+	golang.org/x/crypto v0.28.0 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.13.0 // indirect
-	golang.org/x/sync v0.4.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/term v0.25.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.14.0 // indirect
+	golang.org/x/tools v0.24.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/grpc v1.58.2 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
