@@ -41,7 +41,7 @@ var _ = Describe("DaemonSet controller", func() {
 				},
 				Spec: v1alpha1.OctopingerSpec{
 					Template: v1alpha1.Template{
-						Image: "ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.11",
+						Image: "ghcr.io/ionos-cloud/octopinger/octopinger:v0.1.12",
 					},
 					Config: v1alpha1.Config{
 						ICMP: v1alpha1.ICMP{
