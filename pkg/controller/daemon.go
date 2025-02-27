@@ -18,10 +18,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // NewConfigMapData ..
@@ -53,9 +51,6 @@ func (c *ConfigMapData) SetNodes() error {
 func NewDaemonReconciler(mgr manager.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Octopinger{}).
-		Watches(
-			source.NewKindWithCache(&v1alpha1.Octopinger{}, mgr.GetCache()),
-			&handler.EnqueueRequestForObject{}).
 		Complete(&daemonReconciler{
 			Client: mgr.GetClient(),
 			scheme: mgr.GetScheme(),

@@ -21,7 +21,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -464,7 +464,7 @@ func IsControlledBy(obj metav1.Object, owner metav1.Object) bool {
 		if refs[i].UID != owner.GetUID() {
 			continue
 		}
-		return pointer.BoolDeref(refs[i].Controller, false)
+		return ptr.Deref(refs[i].Controller, false)
 	}
 	return false
 }
@@ -624,7 +624,7 @@ func GetKind(obj runtime.Object) string {
 // reconcile based on changes without using an OwnerReference.
 func EnqueueRequestFromNameLabel(label string, namespace ...string) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(
-		func(object client.Object) []reconcile.Request {
+		func(_ context.Context, object client.Object) []reconcile.Request {
 			name, ok := object.GetLabels()[label]
 			if !ok || name == "" {
 				return nil

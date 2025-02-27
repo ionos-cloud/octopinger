@@ -29,10 +29,8 @@ type dnsProbe struct {
 	mux sync.Mutex
 }
 
-var (
-	// ErrResolveHost ...
-	ErrResolveHost = errors.New("could not resolve host")
-)
+// ErrResolveHost ...
+var ErrResolveHost = errors.New("could not resolve host")
 
 // NewDNSProbe ...
 func NewDNSProbe(nodeName, server string, names []string, opts ...Opt) *dnsProbe {

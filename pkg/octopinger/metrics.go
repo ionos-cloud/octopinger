@@ -38,10 +38,8 @@ func (r *Registry) Handler() http.Handler {
 	return promhttp.InstrumentMetricHandler(r, promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
 }
 
-var (
-	// DefaultMetrics ...
-	DefaultMetrics = NewMetrics()
-)
+// DefaultMetrics ...
+var DefaultMetrics = NewMetrics()
 
 // Metrics ...
 type Metrics struct {

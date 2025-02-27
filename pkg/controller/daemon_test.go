@@ -15,7 +15,6 @@ import (
 // +kubebuilder:docs-gen:collapse=Imports
 
 var _ = Describe("DaemonSet controller", func() {
-
 	// Define utility constants for object names and testing timeouts/durations and intervals.
 	const (
 		OctopingerName      = "test-octopinger"
@@ -66,5 +65,4 @@ var _ = Describe("DaemonSet controller", func() {
 			Expect(createdOctopinger.Name).Should(Equal(OctopingerName))
 		})
 	})
-
 })

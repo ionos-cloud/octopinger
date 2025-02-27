@@ -18,9 +18,7 @@ var (
 	date    = "unknown"
 )
 
-var (
-	build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
-)
+var build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
 
 type flags struct {
 	Debug      bool
