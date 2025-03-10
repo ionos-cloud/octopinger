@@ -1,4 +1,4 @@
-VERSION ?= 0.0.33
+VERSION ?= 0.2.0
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25.0
@@ -42,8 +42,8 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: build
-build:
-	@goreleaser build --rm-dist --snapshot
+build: goreleaser
+	$(GORELEASER) build --clean --snapshot
 
 .PHONY: vendor
 vendor: export GOPRIVATE=github.com/ionos-cloud
@@ -87,12 +87,14 @@ HELM ?= $(LOCALBIN)/helm-$(HELM_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
+GORELEASER = $(LOCALBIN)/goreleaser
 
 ## Tool Versions
 HELM_VERSION ?= v3.17.1
 CONTROLLER_TOOLS_VERSION ?= v0.17.2
 ENVTEST_VERSION ?= release-0.19
 GOLANGCI_LINT_VERSION ?= v1.64.6
+GORELEASER_VERSION ?= v2.7.0
 
 
 .PHONY: helm
@@ -114,6 +116,11 @@ $(ENVTEST): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+
+.PHONY: goreleaser
+goreleaser: $(GORELEASER) ## Download goreleaser locally if necessary.
+$(GORELEASER): $(LOCALBIN)
+	$(call go-install-tool,$(GORELEASER),github.com/goreleaser/goreleaser/v2,$(GORELEASER_VERSION))
 
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
