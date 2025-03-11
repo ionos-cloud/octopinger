@@ -1,6 +1,7 @@
 module github.com/ionos-cloud/octopinger
 
 go 1.22.4
+toolchain go1.23.7
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -20,7 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
-	golang.org/x/mod v0.13.0
+	golang.org/x/mod v0.24.0
 	helm.sh/helm v2.17.0+incompatible
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
