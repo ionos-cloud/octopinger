@@ -16,8 +16,8 @@ require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/prometheus/client_golang v1.17.0
-	github.com/spf13/cobra v1.7.0
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/cobra v1.9.1
+	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
 	golang.org/x/mod v0.13.0
@@ -72,7 +72,7 @@ require (
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/chavacava/garif v0.0.0-20230227094218-b8c73b2037b8 // indirect
 	github.com/containerd/containerd v1.6.6 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/curioswitch/go-reassign v0.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/daixiang0/gci v0.11.0 // indirect
