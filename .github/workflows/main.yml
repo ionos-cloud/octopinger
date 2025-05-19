@@ -4,22 +4,22 @@ on:
   workflow_call:
   push:
     branches:
-    - main
-    - release/*
+      - main
+      - release/*
   pull_request:
     branches:
-    - main
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: 'go.mod'
-    - uses: golangci/golangci-lint-action@v6
-      with:
-        version: latest
-        args: --timeout=5m
-    - run: make test
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.6
+          args: --timeout=5m
+      - run: make test

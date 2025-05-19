@@ -1,7 +1,7 @@
 VERSION ?= 0.2.0
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.25.0
+ENVTEST_K8S_VERSION = 1.31.0
 
 # kustomize for deploy
 KUSTOMIZE = go run sigs.k8s.io/kustomize/kustomize/v3
@@ -92,7 +92,7 @@ GORELEASER = $(LOCALBIN)/goreleaser
 ## Tool Versions
 HELM_VERSION ?= v3.17.1
 CONTROLLER_TOOLS_VERSION ?= v0.17.2
-ENVTEST_VERSION ?= release-0.19
+ENVTEST_VERSION ?= release-0.20
 GOLANGCI_LINT_VERSION ?= v1.64.6
 GORELEASER_VERSION ?= v2.7.0
 
