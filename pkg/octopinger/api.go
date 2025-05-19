@@ -3,7 +3,7 @@ package octopinger
 import (
 	"context"
 
-	srv "github.com/katallaxie/pkg/server"
+	srv "github.com/ionos-cloud/octopinger/internal/server"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
