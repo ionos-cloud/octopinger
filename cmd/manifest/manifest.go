@@ -42,7 +42,7 @@ func main() {
 	}
 
 	bb := []byte(strings.Join(ss, ""))
-	err = os.WriteFile(filepath.Clean(filepath.Join(cwd, f.Output)), bb, 0600)
+	err = os.WriteFile(filepath.Clean(filepath.Join(cwd, f.Output)), bb, 0o600)
 	if err != nil {
 		log.Fatal(err)
 	}

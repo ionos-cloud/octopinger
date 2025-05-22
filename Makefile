@@ -35,7 +35,7 @@ docker-minikube:
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
-	go run mvdan.cc/gofumpt -w .
+	go fmt ./...
 
 .PHONY: vet
 vet: ## Run go vet against code.
@@ -91,9 +91,9 @@ GORELEASER = $(LOCALBIN)/goreleaser
 
 ## Tool Versions
 HELM_VERSION ?= v3.17.1
-CONTROLLER_TOOLS_VERSION ?= v0.17.2
+CONTROLLER_TOOLS_VERSION ?= v0.18.0
 ENVTEST_VERSION ?= release-0.20
-GOLANGCI_LINT_VERSION ?= v1.64.6
+GOLANGCI_LINT_VERSION ?= v2.1.6
 GORELEASER_VERSION ?= v2.7.0
 
 
