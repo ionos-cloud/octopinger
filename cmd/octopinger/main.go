@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/env/v6"
+	"github.com/ionos-cloud/octopinger/internal/server"
 	"github.com/ionos-cloud/octopinger/pkg/octopinger"
-	"github.com/katallaxie/pkg/server"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -18,9 +18,7 @@ var (
 	date    = "unknown"
 )
 
-var (
-	build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
-)
+var build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
 
 type flags struct {
 	Debug      bool

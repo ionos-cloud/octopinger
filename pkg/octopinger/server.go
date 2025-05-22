@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/ionos-cloud/octopinger/api/v1alpha1"
-	srv "github.com/katallaxie/pkg/server"
+	srv "github.com/ionos-cloud/octopinger/internal/server"
 	"go.uber.org/zap"
 )
 

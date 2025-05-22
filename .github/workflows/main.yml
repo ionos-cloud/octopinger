@@ -4,25 +4,25 @@ on:
   workflow_call:
   push:
     branches:
-    - main
-    - release/*
+      - main
+      - release/*
   pull_request:
     branches:
-    - main
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: 1.22.4
-    - uses: golangci/golangci-lint-action@v3
-      with:
-        version: latest
-        args: --timeout=5m
-        # skip cache because of flaky behaviors
-        skip-build-cache: true
-        skip-pkg-cache: true
-    - run: make test
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.1.6
+          args: --timeout=5m
+
+      - run: make test

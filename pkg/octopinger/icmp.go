@@ -404,7 +404,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 					return err
 				}
 
-				opt := *pinger.DefaultICMPPingOpts
+				opt := pinger.DefaultICMPPingOpts()
 				opt.Interval = func() time.Duration { return 100 * time.Millisecond }
 				opt.PingCount = i.count
 				opt.PingTimeout = i.timeout
@@ -412,7 +412,7 @@ func (i *icmpProbe) Do(ctx context.Context, metrics Gatherer) func() error {
 				i.Reset()
 				i.SetTotalNumber(float64(len(nodes)))
 
-				stats, err := pinger.ICMPPing(&opt, nodes...)
+				stats, err := pinger.ICMPPing(opt, nodes...)
 				if err != nil {
 					return err
 				}

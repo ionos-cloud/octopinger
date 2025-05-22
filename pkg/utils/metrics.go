@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 
@@ -23,12 +22,12 @@ var (
 // clientWithMetrics is a wrapper around Kubernetes client that proxies all the
 // requests and updates corresponding metrics.
 type clientWithMetrics struct {
-	client client.Client
+	client.Client
 }
 
 // NewClient creates a new Kubernetes Client that monitors Kubernetes operations.
 func NewClient(client client.Client) client.Client {
-	return &clientWithMetrics{client: client}
+	return &clientWithMetrics{client}
 }
 
 // DefaultNewClientWithMetrics supports read and list caching and enables
@@ -37,17 +36,19 @@ func NewClient(client client.Client) client.Client {
 func DefaultNewClientWithMetrics(
 	cache cache.Cache, config *rest.Config, options client.Options, uncachedObjects ...client.Object,
 ) (client.Client, error) {
-	c, err := client.New(config, options)
+	cachingClient, err := client.New(config, client.Options{
+		Scheme: options.Scheme,
+		Mapper: options.Mapper,
+		Cache: &client.CacheOptions{
+			Reader:     cache,
+			DisableFor: uncachedObjects,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	mc := NewClient(c)
-	return client.NewDelegatingClient(client.NewDelegatingClientInput{
-		CacheReader:     cache,
-		Client:          mc,
-		UncachedObjects: uncachedObjects,
-	})
+	return NewClient(cachingClient), nil
 }
 
 // CreateMetrics creates a new Kubernetes Histogram metric and registers it in
@@ -70,31 +71,13 @@ func CreateMetrics(namespace string) *prometheus.HistogramVec {
 	return kubernetesDuration
 }
 
-// Status updates status subresource for k8s objects. It proxies requests to
-// underlying controller-runtime StatusClient.
-func (c *clientWithMetrics) Status() client.StatusWriter {
-	return c.client.Status()
-}
-
-// Scheme returns the scheme this client is using. It proxies requests to
-// underlying controller-runtime Client.
-func (c *clientWithMetrics) Scheme() *runtime.Scheme {
-	return c.client.Scheme()
-}
-
-// RESTMapper returns the rest this client is using. It proxies requests to
-// underlying controller-runtime Client.
-func (c *clientWithMetrics) RESTMapper() meta.RESTMapper {
-	return c.client.RESTMapper()
-}
-
 // Get retrieves an obj for the given object key from the k8s Cluster. It
 // proxies requests to underlying controller-runtime Reader.
 func (c *clientWithMetrics) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	return requestWithMeasure(
 		"get",
 		func() (runtime.Object, error) {
-			err := c.client.Get(ctx, key, obj, opts...)
+			err := c.Get(ctx, key, obj, opts...)
 			return obj, err
 		},
 	)
@@ -106,7 +89,7 @@ func (c *clientWithMetrics) List(ctx context.Context, list client.ObjectList, op
 	return requestWithMeasure(
 		"list",
 		func() (runtime.Object, error) {
-			err := c.client.List(ctx, list, opts...)
+			err := c.List(ctx, list, opts...)
 			return list, err
 		},
 	)
@@ -118,7 +101,7 @@ func (c *clientWithMetrics) Create(ctx context.Context, obj client.Object, opts 
 	return requestWithMeasure(
 		"create",
 		func() (runtime.Object, error) {
-			err := c.client.Create(ctx, obj, opts...)
+			err := c.Create(ctx, obj, opts...)
 			return obj, err
 		},
 	)
@@ -130,7 +113,7 @@ func (c *clientWithMetrics) Delete(ctx context.Context, obj client.Object, opts 
 	return requestWithMeasure(
 		"delete",
 		func() (runtime.Object, error) {
-			return obj, c.client.Delete(ctx, obj, opts...)
+			return obj, c.Delete(ctx, obj, opts...)
 		},
 	)
 }
@@ -141,7 +124,7 @@ func (c *clientWithMetrics) Update(ctx context.Context, obj client.Object, opts 
 	return requestWithMeasure(
 		"update",
 		func() (runtime.Object, error) {
-			return obj, c.client.Update(ctx, obj, opts...)
+			return obj, c.Update(ctx, obj, opts...)
 		},
 	)
 }
@@ -152,7 +135,7 @@ func (c *clientWithMetrics) Patch(ctx context.Context, obj client.Object, patch 
 	return requestWithMeasure(
 		"patch",
 		func() (runtime.Object, error) {
-			return obj, c.client.Patch(ctx, obj, patch, opts...)
+			return obj, c.Patch(ctx, obj, patch, opts...)
 		},
 	)
 }
@@ -163,7 +146,7 @@ func (c *clientWithMetrics) DeleteAllOf(ctx context.Context, obj client.Object, 
 	return requestWithMeasure(
 		"delete_all_of",
 		func() (runtime.Object, error) {
-			return obj, c.client.DeleteAllOf(ctx, obj, opts...)
+			return obj, c.DeleteAllOf(ctx, obj, opts...)
 		},
 	)
 }
