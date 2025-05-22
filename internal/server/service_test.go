@@ -10,14 +10,14 @@ import (
 func TestLookupName(t *testing.T) {
 	assert.Equal(t, "", Service.Name())
 
-	os.Setenv("NAME", "test")
+	_ = os.Setenv("NAME", "test")
 
 	env := ServiceEnv{"NAME"}
 
 	Service.Lookup(env)
 	assert.Equal(t, "test", Service.Name())
 
-	os.Setenv("NAME", "foo")
+	_ = os.Setenv("NAME", "foo")
 	Service.Lookup(env)
 	assert.NotEqual(t, "foo", Service.Name())
 }
