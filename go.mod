@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/chenjiandongx/pinger v0.3.0
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/montanaflynn/stats v0.7.1
