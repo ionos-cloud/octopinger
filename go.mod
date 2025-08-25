@@ -1,6 +1,6 @@
 module github.com/ionos-cloud/octopinger
 
-go 1.24.5
+go 1.24.6
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
