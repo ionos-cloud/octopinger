@@ -13,16 +13,21 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          go-version-file: 'go.mod'
+          go-version-file: go.mod
+          cache: true
 
-      - uses: golangci/golangci-lint-action@v7
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.1.6
+          version: latest
           args: --timeout=5m
 
       - run: make test

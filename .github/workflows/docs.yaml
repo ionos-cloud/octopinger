@@ -16,19 +16,19 @@ jobs:
       run:
         working-directory: docs
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-    - run: |
-        npm i --legacy-peer-deps
-        npm run build
-        npm run export
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          npm i --legacy-peer-deps
+          npm run build
+          npm run export
 
-    - uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/out
-        keep_files: true
-
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/out
+          keep_files: true
